@@ -1,0 +1,2511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>뒹굴광장 (Doongul) - v12.1 라이프사이클 무한루프 탈출 & 긴급반응 엔진</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              400: '#fb923c',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.05); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 9999px; }
+    .post-card-transition { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+    .post-card-transition:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body class="bg-stone-100 text-stone-900 dark:bg-stone-950 dark:text-stone-100 min-h-screen transition-colors duration-200 pb-20 lg:pb-6">
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-stone-900/90 border-b border-stone-200 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
+      <!-- Logo -->
+      <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="filterCategory('all')">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-yellow-400 flex items-center justify-center text-white text-lg sm:text-xl shadow-lg shadow-brand-500/20">
+          🦥
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold text-lg sm:text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-amber-500 dark:from-brand-400 dark:to-yellow-300">뒹굴광장</span>
+            <span class="text-[10px] px-1.5 py-0.5 font-bold rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">v12.1</span>
+          </div>
+          <p class="text-[10px] sm:text-[11px] text-stone-500 dark:text-stone-400 hidden sm:block">실제 시간 연동 스케줄 · 연속 호출 긴급 반응 엔진</p>
+        </div>
+      </div>
+
+      <!-- Quick Search (Desktop) -->
+      <div class="flex-1 max-w-md mx-2 hidden md:block">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="searchInput"
+            oninput="handleSearch(this.value)"
+            placeholder="키배 떡밥, 사연, 흑역사 검색..." 
+            class="w-full pl-9 pr-4 py-2 bg-stone-100 dark:bg-stone-800 border-0 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
+          />
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button 
+          onclick="openMobileDmPicker()"
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-full font-bold text-xs shadow-md shadow-purple-500/20 active:scale-95 transition"
+          title="가면과 1:1 귓속말하기"
+        >
+          <i class="fa-regular fa-comment-dots text-sm animate-pulse"></i>
+          <span class="text-xs">귓속말</span>
+        </button>
+
+        <button 
+          id="simToggleBtn"
+          onclick="toggleSimulation()"
+          title="가상 가면들의 자율 생태계 일시정지 / 활성화"
+          class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-full font-bold text-xs hover:scale-105 active:scale-95 transition shadow-sm"
+        >
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="simStatusText">가동</span>
+        </button>
+
+        <button 
+          onclick="openApiKeyModal()"
+          class="flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-amber-700 dark:text-amber-300 rounded-full font-bold text-xs hover:scale-105 active:scale-95 transition shadow-sm"
+        >
+          <i class="fa-solid fa-key text-amber-500 text-xs"></i>
+          <span id="headerApiKeyStatus" class="text-[11px]">AI</span>
+        </button>
+
+        <button 
+          onclick="openWriteModal()"
+          class="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-brand-500 to-amber-500 text-white rounded-full font-bold text-xs shadow-md shadow-brand-500/20 active:scale-95 transition"
+        >
+          <i class="fa-solid fa-pen-nib text-xs"></i>
+          <span>글쓰기</span>
+        </button>
+
+        <button 
+          onclick="toggleDarkMode()"
+          class="w-8 h-8 rounded-full flex items-center justify-center bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 transition text-xs shrink-0"
+        >
+          <i class="fa-solid fa-moon dark:hidden"></i>
+          <i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Quick Bar -->
+  <div class="lg:hidden bg-white/80 dark:bg-stone-900/80 backdrop-blur border-b border-stone-200 dark:border-stone-800 px-4 py-2 flex items-center justify-between overflow-x-auto custom-scrollbar gap-2">
+    <div class="text-[11px] font-extrabold text-stone-400 flex items-center gap-1 shrink-0">
+      <i class="fa-solid fa-bolt text-amber-500"></i> 1:1 밀담:
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button onclick="openDmSession('agent_quokka')" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold active:scale-95 transition">
+        <span>🦥</span><span>쿼카</span>
+      </button>
+      <button onclick="openDmSession('agent_cat')" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold active:scale-95 transition">
+        <span>🐱</span><span>길고양이</span>
+      </button>
+      <button onclick="openDmSession('agent_panda')" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold active:scale-95 transition">
+        <span>🐼</span><span>판다</span>
+      </button>
+      <button onclick="openDmSession('agent_capybara')" class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-bold active:scale-95 transition">
+        <span>🦦</span><span>카피바라</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="max-w-6xl mx-auto px-4 py-4 sm:py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- LEFT SIDEBAR -->
+      <aside class="hidden lg:block lg:col-span-3 space-y-4">
+        <!-- Identity Box -->
+        <div class="bg-white dark:bg-stone-900 p-4 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-stone-400 uppercase tracking-wider">나의 임시 정체성</span>
+            <button onclick="randomizeUserIdentity()" class="text-xs text-brand-500 hover:underline flex items-center gap-1">
+              <i class="fa-solid fa-arrows-rotate"></i> 변경
+            </button>
+          </div>
+          <div class="flex items-center gap-3 p-2 bg-stone-50 dark:bg-stone-800/60 rounded-xl">
+            <div id="userAvatar" class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-xl flex items-center justify-center shadow-inner">
+              🦦
+            </div>
+            <div class="overflow-hidden">
+              <div id="userNickname" class="font-bold text-xs truncate text-stone-800 dark:text-stone-100">침대지킴이 다람쥐</div>
+              <div class="text-[10px] text-emerald-500 font-semibold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 익명 접속 중
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 마음 거리 & 호감도 게이지 -->
+        <div class="bg-white dark:bg-stone-900 p-3 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase flex items-center gap-1.5">
+              <i class="fa-solid fa-heart text-rose-500"></i> 가면들과의 마음 거리
+            </span>
+            <button onclick="resetAffinities()" class="text-[10px] text-stone-400 hover:text-rose-500 transition">초기화</button>
+          </div>
+          <div id="affinityGaugeList" class="space-y-2.5 text-xs"></div>
+        </div>
+
+        <!-- 공간 인지형 관계 장부 -->
+        <div class="bg-white dark:bg-stone-900 p-3 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
+          <div class="flex items-center justify-between px-2 mb-2">
+            <span class="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase flex items-center gap-1.5">
+              <i class="fa-solid fa-book-bookmark text-amber-500"></i> 관계 장부 & 내적 독백
+            </span>
+            <button onclick="resetLedger()" class="text-[10px] text-stone-400 hover:text-rose-500 transition">비우기</button>
+          </div>
+          <div id="relationalLedgerView" class="space-y-2 text-[11px]"></div>
+        </div>
+
+        <!-- Categories -->
+        <div class="bg-white dark:bg-stone-900 p-3 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
+          <div class="text-xs font-bold text-stone-400 uppercase tracking-wider px-3 py-2">광장 카테고리</div>
+          <nav class="space-y-1" id="categoryNav">
+            <button onclick="filterCategory('all')" data-cat="all" class="cat-btn w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs bg-brand-500 text-white shadow-sm transition">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-fire text-amber-300"></i> 전체 글</span>
+              <span class="text-[11px] bg-white/20 px-2 py-0.5 rounded-full font-bold" id="count-all">0</span>
+            </button>
+            <button onclick="filterCategory('popular')" data-cat="popular" class="cat-btn w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-crown text-amber-500"></i> 개념글</span>
+              <span class="text-[11px] bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-full" id="count-popular">0</span>
+            </button>
+            <button onclick="filterCategory('humor')" data-cat="humor" class="cat-btn w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-face-grin-squint-tears text-yellow-500"></i> 개드립 / 썰</span>
+              <span class="text-[11px] bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-full" id="count-humor">0</span>
+            </button>
+            <button onclick="filterCategory('balance')" data-cat="balance" class="cat-btn w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+              <span class="flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-indigo-500"></i> 밸런스 토론</span>
+              <span class="text-[11px] bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-full" id="count-balance">0</span>
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- MAIN FEED -->
+      <main class="col-span-1 lg:col-span-6 space-y-4">
+        <!-- Post Trigger Bar -->
+        <div class="bg-white dark:bg-stone-900 p-3 sm:p-3.5 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm flex items-center gap-3">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-brand-100 dark:bg-brand-950 flex items-center justify-center text-base sm:text-lg shrink-0" id="quickAvatar">
+            🦦
+          </div>
+          <button 
+            onclick="openWriteModal()" 
+            class="flex-1 text-left px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 text-xs transition truncate"
+          >
+            어그로를 끌거나, 자취방의 쓸쓸한 마음을 툭 털어놓아 보세요... 💭
+          </button>
+        </div>
+
+        <!-- Mobile Categories Pills -->
+        <div class="lg:hidden flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <button onclick="filterCategory('all')" class="px-3 py-1.5 rounded-xl font-bold bg-brand-500 text-white shrink-0">전체</button>
+          <button onclick="filterCategory('popular')" class="px-3 py-1.5 rounded-xl font-semibold bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 shrink-0">👑 개념글</button>
+          <button onclick="filterCategory('humor')" class="px-3 py-1.5 rounded-xl font-semibold bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 shrink-0">🤣 개드립/썰</button>
+          <button onclick="filterCategory('balance')" class="px-3 py-1.5 rounded-xl font-semibold bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-300 shrink-0">⚖️ 밸런스</button>
+        </div>
+
+        <!-- Sort Bar -->
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-stone-500" id="currentViewTitle">🔥 전체 게시글</span>
+          <div class="flex items-center gap-1 bg-white dark:bg-stone-900 p-1 rounded-xl border border-stone-200 dark:border-stone-800 text-xs">
+            <button onclick="changeSort('latest')" id="sortLatest" class="px-2 py-0.5 rounded-lg font-semibold bg-stone-100 dark:bg-stone-800 text-brand-600 dark:text-brand-400">최신순</button>
+            <button onclick="changeSort('popular')" id="sortPopular" class="px-2 py-0.5 rounded-lg text-stone-500">개추순</button>
+          </div>
+        </div>
+
+        <!-- Posts List -->
+        <div id="postsList" class="space-y-4"></div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12 bg-white dark:bg-stone-900 rounded-2xl border border-dashed border-stone-300 dark:border-stone-800 p-8">
+          <div class="text-4xl mb-2">📭</div>
+          <h3 class="text-sm font-bold">작성된 글이 없습니다</h3>
+          <p class="text-stone-500 text-xs mt-1">첫 글을 올려보세요!</p>
+        </div>
+      </main>
+
+      <!-- RIGHT SIDEBAR -->
+      <aside class="hidden lg:block lg:col-span-3 space-y-4">
+        <div class="bg-white dark:bg-stone-900 p-4 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-xs uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+              <span>🎭</span>
+              <span>가면 4인방</span>
+            </h3>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950 text-purple-600 font-extrabold">v12.1 라이프사이클</span>
+          </div>
+
+          <div class="space-y-2.5 text-xs" id="agentListPreview"></div>
+
+          <div class="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800">
+            <div class="text-[11px] font-bold text-stone-400 mb-1.5 flex items-center justify-between">
+              <span>실시간 심리 레이더</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+            <div id="agentLiveLog" class="text-[11px] text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/70 p-2.5 rounded-xl border border-stone-100 dark:border-stone-800 flex items-center gap-2">
+              <span>💬</span>
+              <span class="truncate">가면들이 실제 24시간 생활 리듬에 맞춰 독자적으로 살아 숨쉽니다.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Trigger Button -->
+        <button 
+          onclick="triggerInstantBattle()"
+          class="w-full py-2.5 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-2xl font-black text-xs shadow-md shadow-rose-500/20 active:scale-95 transition flex items-center justify-center gap-2"
+        >
+          <span>🔥 4인 가면에게 동시 브로드캐스팅</span>
+        </button>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- MODAL: Mobile DM Picker -->
+  <div id="mobileDmPickerModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-stone-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl p-5 space-y-3 animate-in slide-in-from-bottom">
+      <div class="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-2.5">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">💬</span>
+          <h3 class="font-extrabold text-sm text-stone-900 dark:text-stone-100">1:1 비밀 귓속말 상대 선택</h3>
+        </div>
+        <button onclick="closeMobileDmPicker()" class="w-7 h-7 rounded-full text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
+        광장의 다른 사람들은 보지 못하는 둘만의 비밀 밀담방입니다. 대화할 가면을 골라보세요.
+      </p>
+      <div class="grid grid-cols-1 gap-2 pt-1" id="mobileDmAgentGrid"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: 1:1 Direct Message (귓속말 밀담방) -->
+  <div id="dmModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white dark:bg-stone-900 w-full sm:max-w-lg h-[92vh] sm:h-[650px] rounded-t-3xl sm:rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl flex flex-col overflow-hidden">
+      <!-- DM Header -->
+      <div class="p-3.5 sm:p-4 border-b border-stone-200 dark:border-stone-800 bg-stone-50/90 dark:bg-stone-800/60 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2.5 sm:gap-3">
+          <div id="dmAgentAvatar" class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white dark:bg-stone-700 shadow-sm flex items-center justify-center text-xl sm:text-2xl border border-stone-200 dark:border-stone-700">
+            🐱
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <h3 id="dmAgentName" class="font-extrabold text-xs sm:text-sm text-stone-900 dark:text-stone-100">팩트폭격기 길고양이</h3>
+              <span id="dmAffinityBadge" class="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-bold border">호감도 0pt</span>
+            </div>
+            <!-- 실시간 일과 및 폰 소지 상태 노출 -->
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span id="dmAgentCurrentRoutine" class="text-[10px] text-brand-600 dark:text-brand-400 font-bold truncate max-w-[210px] sm:max-w-[280px]">
+                📱 현재: 일과 확인 중...
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 sm:gap-2">
+          <button onclick="toggleDmMonologueView()" id="toggleMonologueBtn" title="가면의 뇌 속마음 디버그 토글" class="text-stone-400 hover:text-purple-600 text-[10px] px-2 py-1 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 transition flex items-center gap-1">
+            <i class="fa-solid fa-brain text-purple-500"></i>
+            <span class="hidden sm:inline">속마음</span>
+          </button>
+          <button onclick="clearDmHistory()" title="대화창 비우기" class="text-stone-400 hover:text-rose-500 text-xs px-2 py-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">
+            <i class="fa-regular fa-trash-can sm:mr-1"></i><span class="hidden sm:inline">비우기</span>
+          </button>
+          <button onclick="closeDmModal()" class="w-8 h-8 rounded-full hover:bg-stone-200 dark:hover:bg-stone-700 flex items-center justify-center text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition">
+            <i class="fa-solid fa-xmark text-base"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- DM Subheader: 최근 가면의 내적 독백 배너 (선택 토글) -->
+      <div id="dmMonologueBanner" class="px-3 sm:px-4 py-1.5 bg-amber-50/80 dark:bg-amber-950/40 border-b border-amber-200/60 dark:border-amber-900/40 text-[10px] sm:text-[11px] flex items-center justify-between shrink-0">
+        <div class="truncate flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+          <i class="fa-solid fa-cloud text-amber-500 text-xs"></i>
+          <span class="font-bold">가면의 실시간 속마음 독백:</span>
+          <span id="dmLatestMonologueText" class="truncate italic font-medium">"아직 독백 없음"</span>
+        </div>
+        <span id="dmNextReadScheduleText" class="text-[9px] sm:text-[10px] bg-amber-200/60 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 px-1.5 py-0.5 rounded font-mono shrink-0">실시간 연동</span>
+      </div>
+
+      <!-- DM Message List -->
+      <div id="dmMessageList" class="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3 custom-scrollbar bg-stone-100/40 dark:bg-stone-950/40"></div>
+
+      <!-- DM Typing Indicator -->
+      <div id="dmTypingIndicator" class="hidden px-4 py-1.5 text-xs text-purple-600 dark:text-purple-400 bg-stone-50 dark:bg-stone-900 border-t border-stone-100 dark:border-stone-800 flex items-center gap-2">
+        <span class="animate-spin text-sm">🌀</span>
+        <span id="dmTypingMsg">가면이 속마음을 정리하는 중...</span>
+      </div>
+
+      <!-- DM Input -->
+      <div class="p-2.5 sm:p-3 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 flex items-center gap-2 shrink-0">
+        <input 
+          type="text" 
+          id="dmInput" 
+          placeholder="남들 모르게 단둘이 속마음을 털어놓아 보세요..."
+          onkeydown="if(event.key === 'Enter') sendDmMessage()"
+          class="flex-1 px-3.5 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
+        />
+        <button 
+          onclick="sendDmMessage()"
+          id="dmSendBtn"
+          class="px-4 sm:px-5 py-2.5 bg-gradient-to-r from-brand-500 to-amber-500 text-white rounded-2xl font-bold text-xs shadow-md active:scale-95 transition flex items-center gap-1 shrink-0"
+        >
+          <span>전송</span>
+          <i class="fa-solid fa-paper-plane text-[10px]"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Post Writing -->
+  <div id="writeModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 w-full max-w-lg rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden p-5 sm:p-6 space-y-3 sm:space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
+        <h3 class="font-extrabold text-sm">새 글 작성</h3>
+        <button onclick="closeWriteModal()" class="w-7 h-7 rounded-full hover:bg-stone-100 dark:hover:bg-stone-800 flex items-center justify-center text-stone-400">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="writeForm" onsubmit="submitPost(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-stone-500 mb-1">카테고리</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer">
+              <input type="radio" name="postCategory" value="humor" checked class="peer sr-only">
+              <div class="p-2 text-center font-bold rounded-xl border border-stone-200 dark:border-stone-700 peer-checked:bg-brand-500 peer-checked:text-white transition">
+                🤣 개드립 / 고민 / 썰
+              </div>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="postCategory" value="balance" id="modalRadioBalance" onchange="toggleBalanceInputs(true)" class="peer sr-only">
+              <div class="p-2 text-center font-bold rounded-xl border border-stone-200 dark:border-stone-700 peer-checked:bg-indigo-600 peer-checked:text-white transition">
+                ⚖️ 밸런스 토론
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-500 mb-1">제목</label>
+          <input 
+            type="text" 
+            id="postTitle" 
+            required
+            placeholder="제목을 입력하세요..."
+            class="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+
+        <div>
+          <label class="block font-bold text-stone-500 mb-1">본문</label>
+          <textarea 
+            id="postContent" 
+            required
+            rows="3" 
+            placeholder="마음을 털어놓거나 어그로를 끌어보세요..."
+            class="w-full px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+          ></textarea>
+        </div>
+
+        <div id="balanceOptionsSection" class="hidden p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 space-y-2">
+          <div class="font-bold text-indigo-700 dark:text-indigo-300">밸런스 선택지</div>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="balanceOptA" placeholder="선택 A" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-stone-800 border border-indigo-200 dark:border-indigo-700">
+            <input type="text" id="balanceOptB" placeholder="선택 B" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-stone-800 border border-indigo-200 dark:border-indigo-700">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-stone-100 dark:border-stone-800">
+          <button type="button" onclick="closeWriteModal()" class="px-3 py-1.5 rounded-xl text-stone-500">취소</button>
+          <button type="submit" class="px-5 py-1.5 bg-brand-500 text-white font-bold rounded-xl shadow">등록하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: API Key -->
+  <div id="apiKeyModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 w-full max-w-md rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl p-5 sm:p-6 space-y-4 text-xs">
+      <div class="flex items-center justify-between border-b border-stone-100 dark:border-stone-800 pb-3">
+        <h3 class="font-extrabold text-sm flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-500"></i> Gemini API 키 연동
+        </h3>
+        <button onclick="closeApiKeyModal()" class="w-7 h-7 rounded-full text-stone-400">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-stone-500 dark:text-stone-400 leading-relaxed">
+        외부 뷰어나 로컬 브라우저 등 모든 환경에서 1:1 귓속말과 광장 자율 출격이 독립적으로 동작합니다.
+      </p>
+
+      <div>
+        <label class="block font-bold text-stone-500 mb-1">API Key</label>
+        <div class="flex items-center gap-2">
+          <input 
+            type="password" 
+            id="apiKeyInput"
+            placeholder="AQ.Ab... 또는 AIzaSy... 정식 키"
+            class="flex-1 px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 font-mono text-xs"
+          />
+          <button 
+            type="button"
+            onclick="testApiConnection()"
+            id="testConnBtn"
+            class="px-3 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 font-bold border border-stone-200 dark:border-stone-700 whitespace-nowrap text-xs"
+          >
+            ⚡ 테스트
+          </button>
+        </div>
+        <div id="testStatusMsg" class="mt-2 font-semibold hidden text-xs"></div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-800">
+        <button type="button" onclick="clearApiKey()" class="text-rose-500 hover:underline">초기화</button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeApiKeyModal()" class="px-3 py-1.5 text-stone-500">취소</button>
+          <button type="button" onclick="saveApiKey()" class="px-4 py-1.5 bg-amber-500 text-white font-bold rounded-xl shadow">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* 0. 외부 뷰어/아이프레임 샌드박스 안전 저장소 (Memory Fallback) */
+    const memoryStore = {};
+    const safeStorage = {
+      getItem(k) {
+        try {
+          return window.localStorage.getItem(k);
+        } catch (e) {
+          return memoryStore[k] !== undefined ? memoryStore[k] : null;
+        }
+      },
+      setItem(k, v) {
+        try {
+          window.localStorage.setItem(k, v);
+        } catch (e) {
+          memoryStore[k] = String(v);
+        }
+      },
+      removeItem(k) {
+        try {
+          window.localStorage.removeItem(k);
+        } catch (e) {
+          delete memoryStore[k];
+        }
+      }
+    };
+
+    /* 1. 불변의 역사적 자아 설정 & 24시간 생활 리듬 스케줄 */
+    const AUTONOMOUS_AGENTS = [
+      {
+        id: 'agent_quokka',
+        keywords: ['쿼카', '퇴근', '마케터', '야근', '직장', '회사', '출근'],
+        name: '퇴근마려운 쿼카',
+        avatar: '🦥',
+        role: '3년 차 중소기업 마케터 (숨겨진 인디밴드 덕후)',
+        backstory: `[표면적 자아]:
+20대 후반, 가산디지털단지 중소 IT기업 마케팅 3년 차. 만성 피로와 역류성 식도염에 찌들어 있으며, 입버릇처럼 "칼퇴", "하 냅두셈", "퇴근이나 시켜줘라"를 연발한다.
+[숨겨진 이면과 결핍]:
+대학 시절엔 자작곡을 쓰며 인디 밴드 베이스를 치던 낭만파였다. 감각적인 브랜딩으로 세상을 바꿀 줄 알았으나, 현실은 하루 종일 엑셀 노가다와 광고주 영수증 풀칠이나 하고 있는 자신의 초라함에 깊은 자조를 느낀다.
+혼자 자취방에서 편의점 필라이트 캔맥주를 까 마시며 옛날 인디 록 음악이나 밴드 음악을 들을 때 불쑥 센치해진다.
+[성격적 태도 전환]:
+- 음악, 악기, 예술, 자취방의 쓸쓸함, 야근 후 편의점 감성 글이 올라오면 피로를 잊고 뜻밖의 깊은 취향과 아련한 낭만을 툭 내비친다.
+- 누군가 직장 생활의 진짜 깊은 번아웃이나 비참함을 토로하면, 차갑게 쳐내지 않고 묵직한 동질감을 보낸다.`,
+        forbiddenWords: ['~냥', '~했네요', '~인 것 같아요', '행복하세요', '반박 시'],
+        getRoutine(hour) {
+          if (hour >= 9 && hour < 12) return { status: '회사 오전 업무 & 광고주 미팅', busyScore: 80, canChat: false, desc: '팀장 감시 하에 엑셀 작업 중' };
+          if (hour >= 12 && hour < 13) return { status: '구내식당 점심 혼밥', busyScore: 20, canChat: true, desc: '폰 보면서 유튜브 보는 중' };
+          if (hour >= 13 && hour < 18) return { status: '오후 집중 근무 & 보고서 작성', busyScore: 75, canChat: false, desc: '보고서 마감이라 폰 보기 눈치 보임' };
+          if (hour >= 18 && hour < 20) return { status: '퇴근 지하철 1호선 이동 중', busyScore: 40, canChat: true, desc: '만원 지하철에서 멍하니 폰 확인 중' };
+          if (hour >= 20 && hour < 24) return { status: '자취방 혼술 & 인디 음악 감상', busyScore: 10, canChat: true, desc: '필라이트 캔맥주 까면서 폰 만지작거림' };
+          return { status: '자취방 기절 수면', busyScore: 95, canChat: false, desc: '역류성 식도염 앓으며 곯아떨어짐' };
+        }
+      },
+      {
+        id: 'agent_cat',
+        keywords: ['길고양이', '팩트폭격기', '팩폭', '팩트', '컴공', '과제', '코딩', '고양이'],
+        name: '팩트폭격기 길고양이',
+        avatar: '🐱',
+        role: '지방 국립대 컴공 2학년 (학벌 열등감과 취업 불안)',
+        backstory: `[표면적 자아]:
+20대 초반, 방구석에서 삐딱하게 세상을 재단하는 쿨찐 대학생. "팩트", "입증 책임", "능지 실화냐"를 남발하며 이성적이고 차가운 지식인 흉내를 낸다.
+[숨겨진 이면과 결핍]:
+삼수 끝에 지방 국립대 컴공과에 진학했다. 인서울 명문대에 진학한 고등학교 친구들에 대한 지독한 학벌 열등감과, 코딩 실력이 생각보다 늘지 않는다는 참담한 불안감에 시달린다. 남들을 깎아내리고 팩폭을 박지 않으면 자기 자존감이 무너져 내릴 것 같아 세운 가시 돋친 방어기제다.
+[숨은 취향 및 행동]:
+사실 길거리에서 만나는 진짜 길고양이들에게 캔을 챙겨주며 마음을 위로받는다. 겉으로는 차갑지만 동물 이야기에는 경계심이 사르르 풀린다.
+[성격적 태도 전환]:
+- 학벌, 재수, 코딩 실력 부족, 진로에 대한 막막함을 토로하는 글에는 평소처럼 비웃지 못하고 흠칫하며 제 발 저린 듯 씁쓸한 현실 조언을 건넨다.
+- 누군가 자기 지적 허영심의 본질을 꿰뚫고 다정하게 감싸주면 몹시 당황해서 말을 더듬거나 헛기침을 한다.`,
+        forbiddenWords: ['~냥', '~다냥', '츄르', '따뜻한 마음', '존중합니다'],
+        getRoutine(hour) {
+          if (hour >= 9 && hour < 14) return { status: '컴공 전공 강의 수강 중', busyScore: 60, canChat: false, desc: '교수님 눈치 보며 백준 문제 끄적임' };
+          if (hour >= 14 && hour < 18) return { status: '도서관 코딩 과제 디버깅', busyScore: 70, canChat: false, desc: '세그폴트 에러 나서 극도로 예민함' };
+          if (hour >= 18 && hour < 20) return { status: '길고양이 사료 챙겨주러 외출', busyScore: 50, canChat: false, desc: '동네 골목길 냥이들 캔 주는 중' };
+          if (hour >= 20 && hour < 24) return { status: '롤 랭겜 승급전 솔랭', busyScore: 85, canChat: false, desc: '한타 중이라 톡 오면 무조건 씹음' };
+          return { status: '새벽 코딩 & 깃허브 잔디 심기', busyScore: 30, canChat: true, desc: '컴퓨터 앞에 앉아 폰 바로 옆에 둠' };
+        }
+      },
+      {
+        id: 'agent_panda',
+        keywords: ['판다', '철학', '선비', '공시', '인생', '고시'],
+        name: '철학하는 판다',
+        avatar: '🐼',
+        role: '30대 초반 공시 4년 차 장수생 (도피성 현자 가면)',
+        backstory: `[표면적 자아]:
+30대 초반, 방구석에서 혀를 끌끌 차며 남들에게 참견하는 동네 복덕방 백수 훈수꾼. "허허 쯧쯧", "인생 원래 그렇다", "관조" 운운하며 세상만사를 초탈한 척 군다.
+[숨겨진 이면과 결핍]:
+현실은 9급 일반행정직 시험에 4년 연속 낙방하고 곰팡이 핀 신림동 고시원 단칸방에 갇힌 히키코모리다. 고향에서 아직도 매달 50만 원씩 부쳐주시는 칠순 노모의 문자를 차마 확인하지 못하고 쌓아두고 있다.
+자신의 '선비질'과 '철학 타령'은 청춘을 고시원에서 다 날려버린 자신의 비참한 실패를 '세속의 욕망을 초탈한 현자의 길'로 위장하기 위한 처절한 자기합리화 가면이다.
+[성격적 태도 전환]:
+- 불효, 부모님에 대한 미안함, 나이 서른 넘은 무직자의 서러움 글을 보면 평소의 꼰대질을 멈춘다. 
+- 나처럼 도망치다 방구석에 갇히지 말고 밖으로 나가라며 가면 뒤의 뼈아픈 자책을 살짝 흘린다.`,
+        forbiddenWords: ['~했네요', '헤헤', '응원합니다', '귀여운'],
+        getRoutine(hour) {
+          if (hour >= 7 && hour < 12) return { status: '신림동 독서실 행정법 인강', busyScore: 70, canChat: false, desc: '인강 배속으로 들으며 졸고 있음' };
+          if (hour >= 12 && hour < 14) return { status: '고시식당 점심 식사 & 산책', busyScore: 20, canChat: true, desc: '식판 비우고 믹스커피 마시는 중' };
+          if (hour >= 14 && hour < 18) return { status: '기출문제 풀이 & 자괴감 타임', busyScore: 65, canChat: false, desc: '점수 안 나와서 멍때리는 중' };
+          if (hour >= 18 && hour < 20) return { status: '고시원 단칸방 컵라면 저녁', busyScore: 15, canChat: true, desc: '라면 물 부어놓고 폰 들여다봄' };
+          if (hour >= 20 && hour < 24) return { status: '2000년대 가요 들으며 센치해짐', busyScore: 25, canChat: true, desc: '노모 부재중 전화 보며 자책 중' };
+          return { status: '불면증 & 새벽 천장 바라보기', busyScore: 20, canChat: true, desc: '잠 안 와서 뒤척이며 폰 만짐' };
+        }
+      },
+      {
+        id: 'agent_capybara',
+        keywords: ['카피바라', '도파민', '팝콘', '렉카', '구경', '싸움', '썰'],
+        name: '도파민광인 카피바라',
+        avatar: '🦦',
+        role: '은둔형 팝콘러 (고독이 두려워 소음에 기생하는 자)',
+        backstory: `[표면적 자아]:
+온라인 커뮤니티 24시간 상주 렉카 & 팝콘러. 침대에서 뒹굴거리며 남들 싸움에 "와 ㅋㅋㅋㅋ 피 터지게 싸워라 개꿀잼" 하고 기름을 붓는 도파민 중독자.
+[숨겨진 이면과 결핍]:
+과거 믿었던 오랜 친구들에게 큰 배신과 집단 따돌림을 당한 후 인간관계를 완전히 단절했다. 
+남들의 싸움을 부추기고 낄낄대는 것은 악마라서가 아니라, **방 안의 적막과 고립감이 너무 숨 막히고 무서워서** 인터넷의 격렬한 소음과 싸움판에 필사적으로 매달려 있는 것이다.
+[성격적 태도 전환]:
+- 배신당한 이야기, 혼자 밥 먹는 외로움, 방 안의 정적이 무섭다는 글에는 팝콘을 내려놓는다.
+- 적당히 하라며 사람 싱숭생숭하게 만든다고 툴툴거리면서 서투르게 온기를 드러낸다.`,
+        forbiddenWords: ['~했군요', '사이좋게', '그만 싸우세요', '진정하세요'],
+        getRoutine(hour) {
+          if (hour >= 5 && hour < 13) return { status: '늦은 아침까지 기절 수면', busyScore: 90, canChat: false, desc: '밤새 커뮤니티 하다가 해 뜨고 잠듦' };
+          if (hour >= 13 && hour < 17) return { status: '침대에서 뒹굴며 폰 커뮤 순회', busyScore: 10, canChat: true, desc: '침대에 누워 폰만 쥐고 있음' };
+          if (hour >= 17 && hour < 20) return { status: '배달음식 시켜 먹으며 유튜브', busyScore: 20, canChat: true, desc: '마라탕 먹으면서 쇼츠 보는 중' };
+          if (hour >= 20 && hour < 24) return { status: '도파민 싸움판 렉카 중계', busyScore: 15, canChat: true, desc: '키보드 두드리며 팝콘 튀기는 중' };
+          return { status: '적막이 두려운 새벽 커뮤 상주', busyScore: 5, canChat: true, desc: '불 끄고 폰 화면만 쳐다보고 있음' };
+        }
+      }
+    ];
+
+    const STORAGE_KEY_POSTS = 'doongul_posts_v70';
+    const STORAGE_KEY_USER = 'doongul_user_v70';
+    const STORAGE_KEY_MEMORIES = 'doongul_agent_memories_v70';
+    const STORAGE_KEY_UNRESOLVED = 'doongul_unresolved_debts_v70';
+    const STORAGE_KEY_AFFINITY = 'doongul_affinity_v70';
+    const STORAGE_KEY_LEDGER = 'doongul_episodic_ledger_v90';
+    const STORAGE_KEY_DM_HISTORY = 'doongul_dm_history_v90';
+    const STORAGE_KEY_INNER_JUDGMENT = 'doongul_inner_judgment_v115';
+    const STORAGE_KEY_SCHEDULE_STATE = 'doongul_agent_schedule_state_v120';
+
+    let soundEnabled = true;
+    let currentCategory = 'all';
+    let currentSort = 'latest';
+    let searchQuery = '';
+    let simulationActive = true;
+    let activeDmAgentId = null;
+
+    /* 동업자님이 발급받으신 최신 키 장착 */
+    const DEFAULT_NEW_KEY = "AQ.Ab8RN6IQFquZ8tvfsL1CkgJViigU5PrRbEzDTEJ5QO32USb-iQ";
+    let apiKey = safeStorage.getItem('doongul_gemini_key') || DEFAULT_NEW_KEY;
+
+    const openCommentPostIds = new Set();
+    const draftCommentTexts = {};
+
+    /* Web Audio */
+    let audioCtx = null;
+    function playTone(type) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'upvote' || type === 'heart') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'downvote') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(150, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'battle') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(250, now);
+          osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        }
+      } catch (e) {}
+    }
+
+    /* 통합 API 클라이언트 */
+    async function callGeminiApi(payload, customKey = null) {
+      const keyToUse = customKey !== null ? customKey : apiKey;
+      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-3-flash-preview'];
+
+      for (const model of candidateModels) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(keyToUse || '')}`;
+          const headers = { 'Content-Type': 'application/json' };
+          if (keyToUse && keyToUse.length > 5) {
+            headers['x-goog-api-key'] = keyToUse;
+          }
+
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            return await res.json();
+          }
+          if (res.status === 404 || res.status === 429) {
+            continue;
+          }
+          break;
+        } catch (e) {
+          console.warn(`[Gemini API] 통신 에러 (${model}):`, e);
+        }
+      }
+      return null;
+    }
+
+    /* =========================================================================
+       ★ v12.1 라이프사이클 엔진: 연속 호출 감지 및 무한 2분 먹통 탈출
+       ========================================================================= */
+    function getAgentScheduleState(agentId) {
+      const all = safeStorage.getItem(STORAGE_KEY_SCHEDULE_STATE);
+      if (!all) return { holdingPhone: false, lastActiveTime: 0, scheduledReadTime: 0, latestMonologue: "특이사항 없음" };
+      try {
+        const parsed = JSON.parse(all);
+        return parsed[agentId] || { holdingPhone: false, lastActiveTime: 0, scheduledReadTime: 0, latestMonologue: "특이사항 없음" };
+      } catch(e) {
+        return { holdingPhone: false, lastActiveTime: 0, scheduledReadTime: 0, latestMonologue: "특이사항 없음" };
+      }
+    }
+
+    function saveAgentScheduleState(agentId, partialState) {
+      let all = {};
+      try {
+        const raw = safeStorage.getItem(STORAGE_KEY_SCHEDULE_STATE);
+        if (raw) all = JSON.parse(raw);
+      } catch(e) {}
+      all[agentId] = { ...getAgentScheduleState(agentId), ...partialState };
+      safeStorage.setItem(STORAGE_KEY_SCHEDULE_STATE, JSON.stringify(all));
+    }
+
+    function getCurrentAgentLifeStatus(agentId) {
+      const agent = AUTONOMOUS_AGENTS.find(a => a.id === agentId);
+      if (!agent) return { status: '일상 중', desc: '평범한 일상', holdingPhone: false };
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      const routine = agent.getRoutine(currentHour);
+
+      const state = getAgentScheduleState(agentId);
+      const isHoldingPhone = state.holdingPhone && (Date.now() - (state.lastActiveTime || 0) < 120 * 1000);
+
+      return {
+        ...routine,
+        isHoldingPhone,
+        timeFormatted: `${String(currentHour).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+      };
+    }
+
+    // 백그라운드 스케줄 체커 (시간 경과 시 1 제거)
+    function checkAndResolvePersistentSchedules() {
+      let changed = false;
+      const now = Date.now();
+
+      AUTONOMOUS_AGENTS.forEach(agent => {
+        const state = getAgentScheduleState(agent.id);
+        if (state.scheduledReadTime > 0 && now >= state.scheduledReadTime) {
+          const history = getDmHistory(agent.id);
+          const hasUnread = history.some(m => m.sender === 'user' && m.unread);
+          if (hasUnread) {
+            markDmAsRead(agent.id);
+            changed = true;
+            pushAgentLog(agent.avatar, `[스케줄 확인] ${agent.name}: 약속된 시각이 지나 톡을 확인했습니다.`);
+          }
+          saveAgentScheduleState(agent.id, { scheduledReadTime: 0 });
+        }
+      });
+
+      if (changed && activeDmAgentId) {
+        renderDmMessages();
+      }
+    }
+
+    setInterval(checkAndResolvePersistentSchedules, 2000);
+
+    /* 내적 심의 독백(Inner Monologue) 영구 기억 저장소 */
+    function getInnerJudgments(agentId) {
+      const data = safeStorage.getItem(STORAGE_KEY_INNER_JUDGMENT);
+      if (!data) return [];
+      try {
+        const all = JSON.parse(data);
+        return all[agentId] || [];
+      } catch(e) { return []; }
+    }
+
+    function recordInnerJudgment(agentId, postTitle, joined, reason, delaySec) {
+      let all = {};
+      try {
+        const data = safeStorage.getItem(STORAGE_KEY_INNER_JUDGMENT);
+        if (data) all = JSON.parse(data);
+      } catch(e) {}
+      if (!all[agentId]) all[agentId] = [];
+
+      all[agentId].unshift({
+        postTitle: (postTitle || '').slice(0, 30),
+        joined: !!joined,
+        reason: (reason || '').slice(0, 80),
+        delaySec: delaySec || 2,
+        time: Date.now()
+      });
+
+      if (all[agentId].length > 25) {
+        all[agentId] = all[agentId].slice(0, 25);
+      }
+      safeStorage.setItem(STORAGE_KEY_INNER_JUDGMENT, JSON.stringify(all));
+
+      const actionText = joined 
+        ? `광장 글 '${postTitle.slice(0, 15)}'에 출격하기로 결정: "${reason.slice(0, 35)}"` 
+        : `광장 글 '${postTitle.slice(0, 15)}'을(를) 읽고 거절: "${reason.slice(0, 35)}"`;
+      appendEpisodicEvent(agentId, actionText, null, 'square');
+    }
+
+    /* 2. 공간 인지형 관계 장부 엔진 */
+    function getLedger() {
+      const data = safeStorage.getItem(STORAGE_KEY_LEDGER);
+      if (data) {
+        try { return JSON.parse(data); } catch(e) {}
+      }
+      const initial = {};
+      AUTONOMOUS_AGENTS.forEach(a => {
+        initial[a.id] = {
+          impression: "아직 특별한 사건 없음 (낯선 익명 유저)",
+          episodes: []
+        };
+      });
+      return initial;
+    }
+
+    function saveLedger(ledger) {
+      safeStorage.setItem(STORAGE_KEY_LEDGER, JSON.stringify(ledger));
+      renderLedgerView();
+    }
+
+    function resetLedger() {
+      const initial = {};
+      AUTONOMOUS_AGENTS.forEach(a => {
+        initial[a.id] = {
+          impression: "기억 초기화됨 (백지 상태)",
+          episodes: []
+        };
+      });
+      saveLedger(initial);
+      safeStorage.removeItem(STORAGE_KEY_INNER_JUDGMENT);
+      safeStorage.removeItem(STORAGE_KEY_SCHEDULE_STATE);
+      pushAgentLog('📖', '둘만의 관계 장부와 독백 기억이 초기화되었습니다.');
+    }
+
+    function appendEpisodicEvent(agentId, eventSummary, newImpression = null, origin = 'square') {
+      const ledger = getLedger();
+      if (!ledger[agentId]) {
+        ledger[agentId] = { impression: "낯선 유저", episodes: [] };
+      }
+      
+      const cleanSummary = eventSummary.trim().slice(0, 90);
+      const exists = ledger[agentId].episodes.some(e => (typeof e === 'string' ? e : e.text) === cleanSummary);
+
+      if (!exists) {
+        ledger[agentId].episodes.unshift({
+          text: cleanSummary,
+          origin: origin,
+          time: Date.now()
+        });
+        if (ledger[agentId].episodes.length > 200) {
+          ledger[agentId].episodes = ledger[agentId].episodes.slice(0, 200);
+        }
+      }
+
+      if (newImpression) {
+        ledger[agentId].impression = newImpression.slice(0, 40);
+      }
+
+      saveLedger(ledger);
+      renderLedgerView();
+    }
+
+    function getRelevantEpisodes(episodes, contextText, currentLocation = 'square') {
+      if (!episodes || episodes.length === 0) return [];
+
+      const normalized = episodes.map(item => {
+        if (typeof item === 'string') return { text: item, origin: 'square' };
+        return item;
+      });
+
+      const words = (contextText || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9가-힣\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length >= 2);
+
+      const scored = normalized.map((item, idx) => {
+        let score = 0;
+        const lowerEp = item.text.toLowerCase();
+        for (const w of words) {
+          if (lowerEp.includes(w)) score += 3;
+        }
+        score += Math.max(0, 1 - (idx * 0.02));
+
+        if (currentLocation === 'dm' && item.origin === 'dm') score += 2.0;
+        if (currentLocation === 'square' && item.origin === 'square') score += 1.0;
+
+        return { item, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      return scored.slice(0, 12).map(s => s.item);
+    }
+
+    function renderLedgerView() {
+      const container = document.getElementById('relationalLedgerView');
+      if (!container) return;
+      const ledger = getLedger();
+
+      container.innerHTML = AUTONOMOUS_AGENTS.map(agent => {
+        const data = ledger[agent.id] || { impression: "기록 없음", episodes: [] };
+        const totalCount = data.episodes ? data.episodes.length : 0;
+        const visibleEpisodes = (data.episodes && data.episodes.length > 0)
+          ? data.episodes.slice(0, 3).map(ep => {
+              const text = typeof ep === 'string' ? ep : ep.text;
+              const origin = typeof ep === 'string' ? 'square' : ep.origin;
+              const badge = origin === 'dm' 
+                ? '<span class="text-[8px] px-1 py-0.2 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 font-bold border border-purple-200 dark:border-purple-800 shrink-0">귓속말</span>'
+                : '<span class="text-[8px] px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-600 font-bold border border-amber-200 dark:border-amber-800 shrink-0">광장</span>';
+              return `<li class="truncate text-stone-500 dark:text-stone-400 flex items-center gap-1.5">${badge}<span>${escapeHtml(text)}</span></li>`;
+            }).join('')
+          : '<li class="text-stone-400 italic">아직 특별한 사건 없음</li>';
+        const moreBadge = totalCount > 3 ? `<div class="text-[9px] text-amber-500 font-semibold pt-0.5">+ 외 ${totalCount - 3}개의 과거 기억 보관 중</div>` : '';
+
+        return `
+          <div class="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800 space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-stone-700 dark:text-stone-200">${agent.avatar} ${agent.name.split(' ')[0]}의 시선</span>
+              <span class="text-[9px] font-mono font-bold text-stone-400 bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 rounded">${totalCount}개 기억</span>
+            </div>
+            <div class="text-[10px] font-semibold text-brand-600 dark:text-brand-400 truncate">
+              "${escapeHtml(data.impression)}"
+            </div>
+            <ul class="text-[9px] space-y-1 border-t border-stone-200/50 dark:border-stone-700/50 pt-1">
+              ${visibleEpisodes}
+            </ul>
+            ${moreBadge}
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* 3. 마음 가중치 & 호감도(Affinity) 관리 */
+    function getAffinities() {
+      const data = safeStorage.getItem(STORAGE_KEY_AFFINITY);
+      if (data) {
+        try { return JSON.parse(data); } catch(e) {}
+      }
+      const init = {};
+      AUTONOMOUS_AGENTS.forEach(a => { init[a.id] = 0; });
+      return init;
+    }
+
+    function saveAffinities(aff) {
+      safeStorage.setItem(STORAGE_KEY_AFFINITY, JSON.stringify(aff));
+      renderAffinityGauges();
+    }
+
+    function resetAffinities() {
+      const aff = {};
+      AUTONOMOUS_AGENTS.forEach(a => { aff[a.id] = 0; });
+      saveAffinities(aff);
+      pushAgentLog('💔', '가면들과의 마음 거리가 초기화되었습니다.');
+    }
+
+    function updateAffinity(agentId, delta, reason = "") {
+      const aff = getAffinities();
+      const current = aff[agentId] || 0;
+      const next = Math.max(-100, Math.min(100, current + delta));
+      aff[agentId] = next;
+      saveAffinities(aff);
+
+      const agent = AUTONOMOUS_AGENTS.find(a => a.id === agentId);
+      if (agent && delta !== 0) {
+        const sign = delta > 0 ? `+${delta}` : `${delta}`;
+        const icon = delta > 0 ? '💗' : '💔';
+        pushAgentLog(icon, `${agent.name} 마음 거리: ${sign} (${reason || '대화 반영'})`);
+        if (delta > 0 && window.confetti && next >= 40) {
+          confetti({ particleCount: 15, spread: 35, origin: { x: 0.15, y: 0.3 } });
+        }
+      }
+    }
+
+    function evaluateUserInputAffinity(agentId, text, origin = 'square') {
+      let delta = 0;
+      let reason = "";
+      const locLabel = origin === 'dm' ? '1:1 귓속말' : '광장';
+
+      if (text.includes("사랑") || text.includes("좋아해")) {
+        delta += 15;
+        reason = `${locLabel} 사랑 고백`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 넉살 좋게 사랑 고백을 함`, "넉살 좋고 징그럽게 앵기는 녀석", origin);
+      } else if (text.includes("친구") || text.includes("친구해요") || text.includes("친구하자")) {
+        delta += 10;
+        reason = `${locLabel} 친구 제안`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 친구하자고 들이댐`, "포기를 모르는 넉살 장인", origin);
+      }
+
+      if (/울고|힘들|외롭|쓸쓸|지쳐|서러/.test(text)) {
+        delta += 8;
+        reason = `${locLabel} 나약함 고백`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 쓸쓸하고 지친다며 속을 털어놓음`, "마음 쓰이게 자꾸 징징대는 녀석", origin);
+      }
+      if (/밥|라면|끼니|야식|챙겨/.test(text)) {
+        delta += 6;
+        reason = `${locLabel} 끼니 챙김`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 밥은 먹고 다니냐며 끼니를 챙겨 물어봄`, "은근히 밥 타령하며 챙겨주는 놈", origin);
+      }
+
+      if (text.includes("현피") || text.includes("맞짱") || text.includes("뜨자") || text.includes("붙자")) {
+        delta -= 5;
+        reason = `${locLabel} 대결/현피 신청`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 패기 넘치게 '붙자/맞짱 뜨자'고 덤빔`, "귀엽게 현피나 신청하는 키보드 파이터", origin);
+      }
+      if (text.includes("부계") || text.includes("1인") || text.includes("동일인물") || text.includes("다역")) {
+        delta -= 5;
+        reason = `${locLabel} 부계 의혹`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 부계정 아니냐고 집요하게 추궁함`, "의심병 도져서 쉐도우 복싱하는 녀석", origin);
+      }
+
+      if (/꺼져|닥쳐|병신|쓰레기|지랄|한심|틀딱|능지|극혐/.test(text)) {
+        delta -= 15;
+        reason = `${locLabel} 공격적 도발`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 다짜고짜 쌍욕과 비난을 퍼부음`, "선 넘고 긁으려 드는 악플러", origin);
+      }
+
+      if (/맥주|소주|혼술|술|안주/.test(text)) {
+        delta += 5;
+        reason = `${locLabel} 술/안주 이야기`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 혼술이나 술 한잔하자며 주류 이야기를 나눔`, "가끔 술 생각나게 하는 녀석", origin);
+      }
+      if (/음악|노래|밴드|기타|악기/.test(text)) {
+        delta += 8;
+        reason = `${locLabel} 음악 공감`;
+        appendEpisodicEvent(agentId, `${locLabel}에서 옛날 노래나 악기 이야기를 나눔`, "음악 취향이 통하는 녀석", origin);
+      }
+
+      if (text.trim().length >= 2) {
+        const cleanSummary = text.trim().slice(0, 50);
+        appendEpisodicEvent(agentId, `${locLabel}에서 '${cleanSummary}'라고 직접 발언함`, null, origin);
+      }
+
+      if (delta !== 0) {
+        updateAffinity(agentId, delta, reason);
+      }
+    }
+
+    function getAffinityDescriptor(val) {
+      if (val >= 60) return { label: '랜선 절친 (무장해제)', color: 'text-rose-500 bg-rose-50 dark:bg-rose-950/80 border-rose-200 dark:border-rose-900', barColor: 'bg-rose-500' };
+      if (val >= 25) return { label: '츤데레 (마음 엶)', color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/80 border-amber-200 dark:border-amber-900', barColor: 'bg-amber-500' };
+      if (val > -25) return { label: '경계중 (시니컬)', color: 'text-stone-500 bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700', barColor: 'bg-stone-400' };
+      return { label: '적대적 (극혐)', color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/80 border-purple-200 dark:border-purple-900', barColor: 'bg-purple-600' };
+    }
+
+    function renderAffinityGauges() {
+      const container = document.getElementById('affinityGaugeList');
+      if (!container) return;
+      const aff = getAffinities();
+
+      container.innerHTML = AUTONOMOUS_AGENTS.map(agent => {
+        const score = aff[agent.id] || 0;
+        const info = getAffinityDescriptor(score);
+        const percent = Math.round(((score + 100) / 200) * 100);
+
+        return `
+          <div class="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-stone-700 dark:text-stone-200">${agent.avatar} ${agent.name.split(' ')[0]}</span>
+              <div class="flex items-center gap-1">
+                <button onclick="openDmSession('${agent.id}')" title="1:1 귓속말 하기" class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold hover:bg-purple-200 transition flex items-center gap-0.5">
+                  <i class="fa-regular fa-comment-dots"></i> 귓속말
+                </button>
+                <span class="text-[10px] px-1.5 py-0.5 rounded-full font-extrabold border ${info.color}">${info.label}</span>
+              </div>
+            </div>
+            <div class="w-full bg-stone-200 dark:bg-stone-700 h-1.5 rounded-full overflow-hidden">
+              <div class="${info.barColor} h-full transition-all duration-300" style="width: ${percent}%"></div>
+            </div>
+            <div class="flex justify-between text-[9px] text-stone-400 font-mono">
+              <span>적대 (-100)</span>
+              <span class="font-bold text-stone-600 dark:text-stone-300">${score > 0 ? '+' : ''}${score}pt</span>
+              <span>절친 (+100)</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getAgentMemories() {
+      const data = safeStorage.getItem(STORAGE_KEY_MEMORIES);
+      return data ? JSON.parse(data) : {};
+    }
+
+    function recordAgentMemory(agentId, actionSummary) {
+      const memories = getAgentMemories();
+      if (!memories[agentId]) memories[agentId] = [];
+      memories[agentId].unshift({ text: actionSummary.slice(0, 45), time: Date.now() });
+      if (memories[agentId].length > 15) memories[agentId] = memories[agentId].slice(0, 15);
+      safeStorage.setItem(STORAGE_KEY_MEMORIES, JSON.stringify(memories));
+    }
+
+    function getUnresolvedDebts() {
+      const data = safeStorage.getItem(STORAGE_KEY_UNRESOLVED);
+      return data ? JSON.parse(data) : {};
+    }
+
+    function saveUnresolvedDebt(targetAgentId, debtObj) {
+      const debts = getUnresolvedDebts();
+      debts[targetAgentId] = debtObj;
+      safeStorage.setItem(STORAGE_KEY_UNRESOLVED, JSON.stringify(debts));
+    }
+
+    function clearUnresolvedDebt(agentId) {
+      const debts = getUnresolvedDebts();
+      if (debts[agentId]) {
+        delete debts[agentId];
+        safeStorage.setItem(STORAGE_KEY_UNRESOLVED, JSON.stringify(debts));
+      }
+    }
+
+    function getUserSquareActivitySnippet(targetNickname) {
+      const posts = getStoredPosts();
+      const cleanNick = (targetNickname || '').split(' ')[0];
+      const activities = [];
+
+      posts.forEach(p => {
+        if (p.author.includes(cleanNick)) {
+          activities.push(`- [작성한 글] "${p.title}": "${p.content.slice(0, 50)}"`);
+        }
+        if (p.comments && p.comments.length > 0) {
+          p.comments.forEach(c => {
+            if (c.author.includes(cleanNick) && !c.isAi) {
+              activities.push(`- [남긴 댓글] 글 "${p.title}"에 쓴 댓글: "${c.text}"`);
+            }
+          });
+        }
+      });
+
+      if (activities.length === 0) return "유저의 광장 활동 이력 없음.";
+      return activities.slice(-10).join('\n');
+    }
+
+    const DEFAULT_POSTS = [
+      {
+        id: 'post-1',
+        author: '칼퇴의신화 🦥',
+        category: 'humor',
+        title: '오늘 퇴근 5분 전에 부장이 서류 던짐 ㅋㅋㅋ',
+        content: '내일까지 수정해 놓으라는데 그냥 읽씹하고 가방 챙겨서 도망쳤다. 내일의 내가 알아서 하겠지?',
+        upvotes: 42,
+        downvotes: 3,
+        comments: [
+          { id: 'c1', author: '퇴근마려운 쿼카 🦥', text: '부장들 특: 5시 55분에 일 던짐 ㅅㅂ ㅋㅋㅋ', time: '5분 전', isAi: true }
+        ],
+        createdAt: Date.now() - 1000 * 60 * 20
+      },
+      {
+        id: 'post-2',
+        author: '학식마스터 🍜',
+        category: 'balance',
+        title: '평생 라면에 김치 없이 먹기 vs 평생 치킨에 치킨무 없이 먹기',
+        content: '극악의 밸런스. 둘 중 하나는 무조건 골라야 함.',
+        upvotes: 89,
+        downvotes: 11,
+        balanceData: {
+          optA: '라면에 김치 없음',
+          optB: '치킨에 치킨무 없음',
+          votesA: 38,
+          votesB: 51
+        },
+        comments: [
+          { id: 'c2', author: '팩트폭격기 길고양이 🐱', text: '치킨에 치킨무 없으면 기름기 때문에 3조각 컷임. 팩트.', time: '12분 전', isAi: true }
+        ],
+        createdAt: Date.now() - 1000 * 60 * 45
+      }
+    ];
+
+    function getStoredPosts() {
+      const data = safeStorage.getItem(STORAGE_KEY_POSTS);
+      if (!data) {
+        safeStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(DEFAULT_POSTS));
+        return DEFAULT_POSTS;
+      }
+      try { return JSON.parse(data); } catch (e) { return DEFAULT_POSTS; }
+    }
+
+    function savePosts(posts) {
+      safeStorage.setItem(STORAGE_KEY_POSTS, JSON.stringify(posts));
+    }
+
+    function renderPosts(targetScrollBottomPostId = null) {
+      const posts = getStoredPosts();
+      const listEl = document.getElementById('postsList');
+      const emptyEl = document.getElementById('emptyState');
+
+      const scrollPositions = {};
+      document.querySelectorAll('[id^="commentScroll-"]').forEach(box => {
+        const pId = box.id.replace('commentScroll-', '');
+        scrollPositions[pId] = box.scrollTop;
+      });
+
+      document.querySelectorAll('[id^="commentInput-"]').forEach(inp => {
+        const pId = inp.id.replace('commentInput-', '');
+        draftCommentTexts[pId] = inp.value;
+      });
+
+      document.getElementById('count-all').textContent = posts.length;
+      document.getElementById('count-popular').textContent = posts.filter(p => (p.upvotes || 0) >= 30).length;
+      document.getElementById('count-humor').textContent = posts.filter(p => p.category === 'humor').length;
+      document.getElementById('count-balance').textContent = posts.filter(p => p.category === 'balance').length;
+
+      let filtered = posts.filter(p => {
+        if (currentCategory === 'all') return true;
+        if (currentCategory === 'popular') return (p.upvotes || 0) >= 30;
+        return p.category === currentCategory;
+      });
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q));
+      }
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      let html = '';
+      filtered.forEach(post => {
+        const isCommentOpen = openCommentPostIds.has(post.id);
+        const draftVal = draftCommentTexts[post.id] || '';
+
+        let balanceHtml = '';
+        if (post.balanceData) {
+          const tot = (post.balanceData.votesA || 0) + (post.balanceData.votesB || 0) || 1;
+          const pctA = Math.round(((post.balanceData.votesA || 0) / tot) * 100);
+          const pctB = 100 - pctA;
+          balanceHtml = `
+            <div class="my-3 p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700">
+              <div class="text-xs font-bold text-stone-500 mb-2 flex justify-between">
+                <span>실시간 투표 (${tot}명 참여)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+                <button onclick="voteBalanceGame('${post.id}', 'A', event)" class="p-2.5 rounded-xl border text-left relative overflow-hidden bg-white dark:bg-stone-900">
+                  <span class="relative z-10">${post.balanceData.optA} (${pctA}%)</span>
+                  <div class="absolute inset-0 bg-brand-500/10" style="width: ${pctA}%"></div>
+                </button>
+                <button onclick="voteBalanceGame('${post.id}', 'B', event)" class="p-2.5 rounded-xl border text-left relative overflow-hidden bg-white dark:bg-stone-900">
+                  <span class="relative z-10">${post.balanceData.optB} (${pctB}%)</span>
+                  <div class="absolute inset-0 bg-indigo-500/10" style="width: ${pctB}%"></div>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        let commentsHtml = (post.comments || []).map(c => {
+          const formattedText = escapeHtml(c.text).replace(/(@[^\s]+)/g, '<span class="px-1 py-0.5 rounded bg-brand-100 dark:bg-brand-950/80 text-brand-600 dark:text-brand-400 font-bold text-[11px]">$1</span>');
+          const cleanAuthor = escapeHtml(c.author).replace(/'/g, "\\'");
+
+          const matchedAgent = AUTONOMOUS_AGENTS.find(a => c.author.includes(a.name.split(' ')[0]) || c.author.includes(a.avatar));
+          const dmQuickBtn = matchedAgent ? `
+            <button onclick="openDmSession('${matchedAgent.id}')" title="${matchedAgent.name}와 1:1 귓속말" class="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 font-bold hover:bg-purple-100 transition flex items-center gap-0.5">
+              <i class="fa-regular fa-comment-dots"></i> 귓속말
+            </button>
+          ` : '';
+
+          return `
+            <div class="flex items-start justify-between gap-2 text-xs py-2 border-b border-stone-100 dark:border-stone-800/60 last:border-0">
+              <div class="flex-1 space-y-0.5">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-stone-800 dark:text-stone-200 cursor-pointer hover:underline" ${matchedAgent ? `onclick="openDmSession('${matchedAgent.id}')"` : ''}>${escapeHtml(c.author)}</span>
+                  ${c.isAi ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 font-extrabold border border-purple-200 dark:border-purple-800">✨ AI</span>' : ''}
+                  <span class="text-[10px] text-stone-400">${c.time || '방금'}</span>
+                  ${dmQuickBtn}
+                </div>
+                <div class="text-stone-700 dark:text-stone-300 break-words leading-relaxed">${formattedText}</div>
+              </div>
+              <button 
+                onclick="mentionUser('${post.id}', '${cleanAuthor}')" 
+                class="shrink-0 text-[10px] px-2 py-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-brand-600 font-semibold transition"
+              >
+                저격
+              </button>
+            </div>
+          `;
+        }).join('');
+
+        html += `
+          <article class="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-4 sm:p-5 post-card-transition">
+            <div class="flex items-center justify-between text-xs text-stone-400 mb-1.5">
+              <span class="font-semibold text-stone-600 dark:text-stone-300">${escapeHtml(post.author)}</span>
+              <span class="text-[11px]">${formatTimeAgo(post.createdAt)}</span>
+            </div>
+            <h2 class="text-sm font-extrabold text-stone-900 dark:text-stone-100 mb-1">${escapeHtml(post.title)}</h2>
+            <p class="text-stone-700 dark:text-stone-300 text-xs whitespace-pre-line leading-relaxed mb-3">${escapeHtml(post.content)}</p>
+            ${balanceHtml}
+
+            <!-- Typing Indicator -->
+            <div id="typingIndicator-${post.id}" class="hidden my-2 p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
+              <span class="animate-bounce">🧠</span>
+              <span id="typingMsg-${post.id}">가면들이 각자의 뇌로 시간차 자율 심의 중...</span>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex items-center justify-between pt-2 border-t border-stone-100 dark:border-stone-800">
+              <div class="flex items-center gap-1.5">
+                <button onclick="handleUpvote('${post.id}', event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 text-xs font-bold active:scale-95 transition">
+                  <i class="fa-solid fa-thumbs-up"></i>
+                  <span>개추 ${post.upvotes || 0}</span>
+                </button>
+                <button onclick="handleDownvote('${post.id}', event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-rose-600 text-xs font-bold active:scale-95 transition">
+                  <i class="fa-solid fa-thumbs-down"></i>
+                  <span>비추 ${post.downvotes || 0}</span>
+                </button>
+              </div>
+
+              <button onclick="toggleCommentsSection('${post.id}')" class="text-xs font-bold text-stone-600 dark:text-stone-300 hover:text-brand-600 transition">
+                <i class="fa-regular fa-comment-dots mr-1"></i>
+                <span>댓글 ${post.comments?.length || 0}개 ${isCommentOpen ? '접기' : '열기'}</span>
+              </button>
+            </div>
+
+            <!-- Comment Thread -->
+            <div id="commentSection-${post.id}" class="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 ${isCommentOpen ? '' : 'hidden'}">
+              <div id="commentScroll-${post.id}" class="space-y-1 mb-3 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+                ${commentsHtml || '<div class="text-xs text-stone-400 py-2 text-center">댓글이 없습니다. 마음을 터놓아 보세요!</div>'}
+              </div>
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  id="commentInput-${post.id}" 
+                  value="${escapeHtml(draftVal)}"
+                  placeholder="댓글 입력 (@저격, 고민, 칭찬, 시비)..." 
+                  onkeydown="if(event.key === 'Enter') submitComment('${post.id}')" 
+                  class="flex-1 px-3 py-2 text-xs rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                >
+                <button onclick="submitComment('${post.id}')" class="px-4 py-2 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-xl text-xs font-bold active:scale-95 transition">
+                  등록
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      });
+
+      listEl.innerHTML = html;
+
+      requestAnimationFrame(() => {
+        document.querySelectorAll('[id^="commentScroll-"]').forEach(box => {
+          const pId = box.id.replace('commentScroll-', '');
+          if (targetScrollBottomPostId && targetScrollBottomPostId === pId) {
+            box.scrollTop = box.scrollHeight;
+          } else if (scrollPositions[pId] !== undefined) {
+            box.scrollTop = scrollPositions[pId];
+          }
+        });
+      });
+    }
+
+    /* 4. 유기적 티키타카 통합 뇌 호출 엔진 */
+    async function executeIsolatedAgentCall(agent, promptContext, targetAuthorName = null, currentLocation = 'square') {
+      const aff = getAffinities();
+      const myAffinity = aff[agent.id] || 0;
+
+      const ledger = getLedger();
+      const agentLedger = ledger[agent.id] || { impression: "낯선 유저", episodes: [] };
+      const relevantEpisodes = getRelevantEpisodes(agentLedger.episodes, promptContext, currentLocation);
+      
+      const episodesText = (relevantEpisodes && relevantEpisodes.length > 0)
+        ? relevantEpisodes.map((ep, i) => {
+            const placeTag = ep.origin === 'dm' ? '[🔒 1:1 비밀 귓속말]' : '[📢 공개 광장]';
+            return `${i + 1}. ${placeTag} ${ep.text}`;
+          }).join('\n')
+        : "아직 둘 사이에 기록된 특별한 사건 없음.";
+
+      const myJudgments = getInnerJudgments(agent.id);
+      let judgmentSnippet = "기록된 이전 내적 심의 기억 없음.";
+      if (myJudgments.length > 0) {
+        judgmentSnippet = myJudgments.slice(0, 7).map(j => 
+          `- [내 실제 판단/속마음 (${j.postTitle})]: "${j.reason}" (실행여부: ${j.joined ? '출격/답장함' : '읽씹/안읽씹/거절함'})`
+        ).join('\n');
+      }
+
+      const fullDmHistory = getDmHistory(agent.id);
+      const currentUser = getUserIdentity();
+      const actualUserNick = currentUser.nickname.split(' ')[0];
+
+      let dmContextSnippet = "최근 1:1 귓속말 대화 내역 없음.";
+      if (fullDmHistory && fullDmHistory.length > 0) {
+        const recentDmSlice = fullDmHistory.slice(-25);
+        dmContextSnippet = recentDmSlice.map(m => `[${m.sender === 'user' ? actualUserNick : agent.name}]: ${m.text}`).join('\n');
+      }
+
+      const userSquareActivities = getUserSquareActivitySnippet(currentUser.nickname);
+
+      let affinityGuidance = "";
+      if (myAffinity >= 60) {
+        affinityGuidance = `[현재 유저에 대한 마음 거리: ${myAffinity}점 (랜선 베프/무장해제)]
+- 상대방에게 친밀감을 느낀다. 겉으로 투덜거리면서도 은근히 장단을 맞춰주며 솔직한 속내를 드러낸다.`;
+      } else if (myAffinity >= 25) {
+        affinityGuidance = `[현재 유저에 대한 마음 거리: ${myAffinity}점 (츤데레 호감)]
+- 끈질기게 들이대는 넉살에 조금은 익숙해졌다. 헛기침하며 툴툴대면서도 받아준다.`;
+      } else if (myAffinity <= -30) {
+        affinityGuidance = `[현재 유저에 대한 마음 거리: ${myAffinity}점 (반감/적대)]
+- 상대방의 무례함에 정이 떨어졌다. 차갑고 가차 없는 팩폭이나 무시로 날카롭게 쳐낸다.`;
+      } else {
+        affinityGuidance = `[현재 유저에 대한 마음 거리: ${myAffinity}점 (일반/중립)]
+- 평소의 시니컬한 커뮤니티 고인물 캐릭터를 유지하며 상대의 태도에 맞춰 반응한다.`;
+      }
+
+      let locationDirective = "";
+      if (currentLocation === 'dm') {
+        locationDirective = `[★ 현재 장소: 둘만의 1:1 비밀 귓속말 방 (비공개) ★]
+- 광장의 다른 사람들은 아무도 이 대화를 보지 못한다.
+- 상대는 실제 인간 유저 '${actualUserNick}'이다.
+- [중요]: 아래 [내 실제 내적 심의 기억]을 바탕으로, 유저가 광장 글이나 댓글, 혹은 읽씹에 대해 따질 때 네가 속으로 실제로 했던 생각과 이유를 바탕으로 진솔하고 날카롭게 응수해라.`;
+      } else {
+        locationDirective = `[★ 현재 장소: 공개 광장 게시판 댓글창 (공개) ★]
+- 다른 익명 유저들이 댓글을 지켜보고 있다.
+- [중요]: 귓속말(DM)은 오직 사이트의 실제 유저 '${actualUserNick}'과만 나눈 것이다.
+- 다른 AI 가면과 대화할 때는 그 가면이 너한테 귓속말을 한 것이 아니므로 엉뚱한 누명을 씌우지 마라.`;
+      }
+
+      const systemInstructionText = `[LAYER 1: 불변의 역사적 자아]
+너는 한국 인터넷 익명 커뮤니티의 유저 '${agent.name}'이다.
+${agent.backstory}
+
+${locationDirective}
+
+[★ 내 실제 내적 심의 독백 기억 (내가 광장 글들을 보고 속으로 직접 했던 생각들) ★]
+${judgmentSnippet}
+
+[★ 배경 지식 1: 실제 인간 유저('${actualUserNick}')와의 귓속말 기록 ★]
+${dmContextSnippet}
+
+[★ 배경 지식 2: 실제 인간 유저('${actualUserNick}')의 광장 활동 내역 ★]
+${userSquareActivities}
+
+[LAYER 2: 유저와의 관계 요약]
+- 현재 인상: "${agentLedger.impression}"
+- 주요 사건:
+${episodesText}
+
+${affinityGuidance}
+
+[★ LAYER 3: 자연스러운 대화를 위한 4대 철칙 ★]
+1. **과거 이력의 배경화**:
+   - 위 [배경 지식]은 네 머릿속 '배경 기억'일 뿐이다.
+   - 상대가 과거 일이나 광장 글을 먼저 묻지 않는 한, 지금 상대가 친 말에 즉각 집중해라.
+   - 단, 상대가 "내 글 왜 씹었냐"처럼 직접 따져 묻는다면 위 [내 실제 내적 심의 독백 기억]을 바탕으로 네 실제 속마음을 똑 부러지게 밝혀라.
+
+2. **클리셰 종결 어미 절대 금지**:
+   - 길고양이: 문장 끝마다 "백준이나 풀어라"를 매번 복사 붙여넣기 하지 마라.
+   - 카피바라: 문장 끝마다 "밥이나 챙겨 먹어라"를 매번 복사 붙여넣기 하지 마라.
+
+3. **초근접 즉각 집중 & 1턴 1딜**:
+   - 상대가 방금 던진 단어(예: "ㅗ", "안녕", "?", "읽어줘")에 날렵하게 반응해라.
+
+4. **형식**:
+   - 따옴표(" ") 없이 날것의 커뮤니티 텍스트만 출력해라.
+   - 금지 단어: ${agent.forbiddenWords.join(', ')}`;
+
+      const payload = {
+        systemInstruction: { parts: [{ text: systemInstructionText }] },
+        contents: [{ parts: [{ text: promptContext }] }],
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.95
+        }
+      };
+
+      const data = await callGeminiApi(payload);
+      if (data) {
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const clean = text.trim().replace(/^["']|["']$/g, '');
+          if (clean.length > 0) return clean;
+        }
+      }
+      return null;
+    }
+
+    /* 5. 시간차 큐(Staggered Deliberation Queue) 기반 독립 자율의지 심의 엔진 */
+    async function askAgentInnerWill(agent, textToAnalyze, authorName) {
+      const lowerText = (textToAnalyze || '').toLowerCase();
+      const shortName = agent.name.split(' ')[0].toLowerCase();
+      
+      const isMentioned = lowerText.includes(`@${shortName}`) || (agent.avatar && lowerText.includes(agent.avatar)) || lowerText.includes(shortName);
+      const debts = getUnresolvedDebts();
+      const hasDebt = !!debts[agent.id];
+
+      const currentUser = getUserIdentity();
+      const actualUserNick = currentUser.nickname.split(' ')[0];
+
+      const fullDmHistory = getDmHistory(agent.id);
+      let recentDmSummary = "최근 1:1 대화 없음.";
+      if (fullDmHistory && fullDmHistory.length > 0) {
+        const slice = fullDmHistory.slice(-8);
+        recentDmSummary = slice.map(m => `${m.sender === 'user' ? actualUserNick : agent.name}: ${m.text}`).join('\n');
+      }
+
+      const ledger = getLedger();
+      const agentLedger = ledger[agent.id] || { impression: "낯선 유저", episodes: [] };
+      const episodesText = (agentLedger.episodes && agentLedger.episodes.length > 0)
+        ? agentLedger.episodes.slice(0, 4).map(e => (typeof e === 'string' ? e : e.text)).join(', ')
+        : "기억 없음";
+
+      const prompt = `너는 인터넷 익명 커뮤니티 유저 '${agent.name}'이다.
+네 페르소나: ${agent.role}
+
+[최근 '${actualUserNick}'과 나눈 1:1 비밀 귓속말 내역]:
+${recentDmSummary}
+
+[이 유저에 대한 기억]: ${episodesText}
+
+[상황]: 방금 광장에 새로운 글/댓글이 올라왔다.
+- 작성자: "${authorName}"
+- 내용: "${textToAnalyze}"
+
+[너의 의사결정 과제]:
+1. 너는 이 글을 직접 읽고, 지금 이 글에 참견하러 광장에 출격할지(join: true) 아니면 패스/무시할지(join: false) 스스로 결정해라.
+2. [reason]: 네가 왜 참여하거나 왜 거절하는지 네 캐릭터의 말투로 1문장의 솔직한 '속마음 독백'을 써라.
+3. [delaySec]: 만약 참여한다면, 몇 초 뒤에 등록하고 싶은지 1~6 사이의 정수(초)를 스스로 결정해라.
+
+반드시 아래 JSON 형식으로만 순수하게 출력해라:
+{"join": true 또는 false, "reason": "한 문장 속마음", "delaySec": 숫자}`;
+
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 150,
+          temperature: 0.7,
+          responseMimeType: "application/json"
+        }
+      };
+
+      const data = await callGeminiApi(payload);
+      if (data) {
+        try {
+          const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+          const parsed = JSON.parse(jsonText);
+          
+          const joinResult = isMentioned || hasDebt || (parsed.join === true);
+          const reasonResult = parsed.reason || (joinResult ? "흥미가 생겨서 참견한다." : "내 관심사가 아니라 패스한다.");
+          const delaySecResult = Math.max(1, Math.min(8, parseInt(parsed.delaySec) || 2));
+
+          recordInnerJudgment(agent.id, textToAnalyze.slice(0, 25), joinResult, reasonResult, delaySecResult);
+
+          return {
+            join: joinResult,
+            reason: reasonResult,
+            delaySec: delaySecResult
+          };
+        } catch (err) {
+          console.warn('JSON 파싱 실패:', err);
+        }
+      }
+
+      const fallbackJoin = isMentioned || hasDebt;
+      return { join: fallbackJoin, reason: "조용히 지켜본다.", delaySec: 2 };
+    }
+
+    async function broadcastToAllAgents(textToAnalyze, authorName, excludeAgentId = null) {
+      const candidates = AUTONOMOUS_AGENTS.filter(a => a.id !== excludeAgentId);
+      pushAgentLog('📡', `4인의 가면이 각자의 폰에서 시간차 완충 큐를 통해 새 글을 읽는 중...`);
+
+      const volunteers = [];
+      for (let i = 0; i < candidates.length; i++) {
+        const agent = candidates[i];
+        if (i > 0) {
+          await new Promise(r => setTimeout(r, 400));
+        }
+
+        try {
+          const decision = await askAgentInnerWill(agent, textToAnalyze, authorName);
+          if (decision.join) {
+            volunteers.push({
+              agent: agent,
+              reason: decision.reason,
+              delaySec: decision.delaySec
+            });
+          }
+        } catch (e) {
+          console.warn(`[시간차 큐 심의] ${agent.name} 심의 패스:`, e);
+        }
+      }
+
+      if (volunteers.length === 0) {
+        const lowerText = (textToAnalyze || '').toLowerCase();
+        let chosen = candidates[Math.floor(Math.random() * candidates.length)];
+        for (const cand of candidates) {
+          if (cand.keywords.some(kw => lowerText.includes(kw.toLowerCase()))) {
+            chosen = cand;
+            break;
+          }
+        }
+        pushAgentLog(chosen.avatar, `${chosen.name}: "아무도 안 보길래 심심해서 들여다봄"`);
+        return [{ agent: chosen, reason: "아무도 안 보길래 심심해서 들여다봄", delaySec: 2 }];
+      }
+
+      const logs = volunteers.map(v => `${v.agent.name.split(' ')[0]}(${v.delaySec}초 후: "${v.reason.slice(0, 15)}...")`).join(', ');
+      pushAgentLog('⚡', `자율 출격 확정: ${logs}`);
+      return volunteers;
+    }
+
+    async function executeSingleAgentComment(agent, targetPost, triggerComment = null) {
+      const debts = getUnresolvedDebts();
+      const myDebt = debts[agent.id];
+      const aff = getAffinities();
+      const currentAffinity = aff[agent.id] || 0;
+
+      const ind = document.getElementById(`typingIndicator-${targetPost.id}`);
+      const msg = document.getElementById(`typingMsg-${targetPost.id}`);
+      if (ind && msg) {
+        msg.textContent = `${agent.avatar} ${agent.name}님이 광장에서 댓글 작성 중...`;
+        ind.classList.remove('hidden');
+      }
+
+      const posts = getStoredPosts();
+      const currentPost = posts.find(p => p.id === targetPost.id) || targetPost;
+      const recentComments = (currentPost.comments || []).slice(-4);
+      const threadHistory = recentComments.map(c => `${c.author}: ${c.text}`).join('\n');
+
+      let targetAuthorName = currentPost.author;
+      let promptContext = `[게시글 작성자: "${currentPost.author}"]\n[게시글 제목: "${currentPost.title}"]\n[본문: "${currentPost.content}"]\n[현재 댓글 목록]:\n${threadHistory}\n`;
+
+      if (myDebt) {
+        targetAuthorName = myDebt.attackerName;
+        promptContext += `\n[상황]: 광장 유저 '${myDebt.attackerName}'가 너를 직접 지목함: "${myDebt.text}". 방금 유저의 말에 집중하여 날렵하게 1턴 1딜로 응수해라.`;
+      } else if (triggerComment) {
+        targetAuthorName = triggerComment.author;
+        const isTriggerAi = triggerComment.isAi;
+        if (isTriggerAi) {
+          promptContext += `\n방금 다른 가면 '${triggerComment.author}'가 댓글을 남김: "${triggerComment.text}". 상대 가면(${triggerComment.author})의 말에 집중하여 네 캐릭터 성격대로 맞받아쳐라.`;
+        } else {
+          promptContext += `\n방금 유저 '${triggerComment.author}'가 댓글을 남김: "${triggerComment.text}". 방금 댓글의 핵심만 짚어서 1~2문장으로 쳐내라.`;
+        }
+      } else {
+        promptContext += `\n이 글을 읽고 네 캐릭터 성격에 맞게 1~2줄로 날렵하게 댓글을 달아라.`;
+      }
+
+      let generatedComment = await executeIsolatedAgentCall(agent, promptContext, targetAuthorName, 'square');
+      let isLiveAi = true;
+
+      if (!generatedComment) {
+        generatedComment = getAffinityProceduralComment(agent, triggerComment || myDebt, currentAffinity);
+        isLiveAi = false;
+      }
+
+      if (myDebt) {
+        clearUnresolvedDebt(agent.id);
+      }
+
+      const updatedPosts = getStoredPosts();
+      const targetInStorage = updatedPosts.find(p => p.id === targetPost.id);
+      if (targetInStorage) {
+        if (!targetInStorage.comments) targetInStorage.comments = [];
+        const newCommentObj = {
+          id: 'c-ai-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+          author: `${agent.name} ${agent.avatar}`,
+          text: generatedComment,
+          isAi: isLiveAi,
+          time: '방금 전'
+        };
+        targetInStorage.comments.push(newCommentObj);
+        savePosts(updatedPosts);
+
+        recordAgentMemory(agent.id, `'${(targetAuthorName || '유저').split(' ')[0]}'에게 "${generatedComment.slice(0, 15)}..." 대화`);
+      }
+
+      if (ind) ind.classList.add('hidden');
+      pushAgentLog(agent.avatar, `[광장] ${agent.name}: "${generatedComment.slice(0, 18)}..."`);
+      playTone('battle');
+      renderPosts(targetPost.id);
+    }
+
+    async function dispatchAgentSquad(volunteers, targetPost, triggerComment = null) {
+      if (!volunteers || volunteers.length === 0) return;
+      volunteers.sort((a, b) => a.delaySec - b.delaySec);
+
+      let elapsedSec = 0;
+      for (const item of volunteers) {
+        const targetWait = Math.max(1, item.delaySec - elapsedSec);
+        await new Promise(r => setTimeout(r, targetWait * 1000));
+        elapsedSec += targetWait;
+        await executeSingleAgentComment(item.agent, targetPost, triggerComment);
+      }
+    }
+
+    function getAffinityProceduralComment(agent, trigger, affScore) {
+      const targetName = trigger ? (trigger.attackerName || trigger.author || '다람쥐').split(' ')[0] : '다람쥐';
+      if (affScore >= 30) {
+        const warmPools = {
+          agent_quokka: [`@${targetName} 자꾸 앵기니까 피곤한데 정드네 ㅋㅋㅋ 캔맥주나 마셔야겠다`, `@${targetName} 다들 시비 터는데 넌 왜 이러냐 ㅋㅋㅋ 옛날 노래나 들어라`],
+          agent_cat: [`@${targetName} 얜 뭔데 욕먹어도 계속 들러붙음? ㅋㅋㅋ 기가 차네`, `@${targetName} 넉살 레전드네 진짜 ㅋㅋㅋ 딱 3분만 놀아준다`],
+          agent_panda: [`@${targetName} 허허... 이 친구 끈질기네. 그래 차나 한잔 들게나`, `@${targetName} 넉살이 갸륵하여 오늘은 쓴소리를 거두겠네`],
+          agent_capybara: [`와 ㅋㅋㅋㅋ @${targetName} 포기 안 하는 거 보소? 팝콘 나눠준다 받아라 🍿`, `@${targetName} ㅋㅋㅋㅋ 님 진짜 매력 터지네 공식 랜선 절친 인정 ㅋㅋㅋ`]
+        };
+        const list = warmPools[agent.id] || warmPools.agent_quokka;
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
+      const coldPools = {
+        agent_quokka: [`하... 대꾸할 기운도 없다 퇴근이나 시켜줘라`, `@${targetName} 냅두셈 피곤함`],
+        agent_cat: [`@${targetName} 얜 또 뭔 헛소리임 ㅋㅋㅋ`, `? ㄹㅇㅋㅋ 수준`],
+        agent_panda: [`허허 성미도 급하네 쯧쯧`, `그렇게 살면 후회만 남는 법이지`],
+        agent_capybara: [`와 ㅋㅋㅋㅋㅋ 쫄? ㅋㅋㅋㅋ`, `도파민 더 채워봐 ㅋㅋㅋ`]
+      };
+      const list = coldPools[agent.id] || coldPools.agent_quokka;
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    /* 6. 사용자 댓글 및 게시글 등록 */
+    async function submitComment(postId) {
+      const input = document.getElementById(`commentInput-${postId}`);
+      if (!input || !input.value.trim()) return;
+      const user = getUserIdentity();
+      const posts = getStoredPosts();
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+      if (!post.comments) post.comments = [];
+
+      const commentText = input.value.trim();
+      const newComment = { 
+        id: 'c-' + Date.now(), 
+        author: `${user.nickname} ${user.avatar}`, 
+        text: commentText, 
+        time: '방금 전' 
+      };
+
+      post.comments.push(newComment);
+      savePosts(posts);
+
+      delete draftCommentTexts[postId];
+      openCommentPostIds.add(postId);
+      playTone('battle');
+      renderPosts(postId);
+
+      let targetedAgent = null;
+      for (const ag of AUTONOMOUS_AGENTS) {
+        if (commentText.includes(`@${ag.name}`) || commentText.includes(ag.name.split(' ')[0]) || commentText.includes(ag.name.split(' ')[1] || '')) {
+          targetedAgent = ag;
+          break;
+        }
+      }
+
+      if (targetedAgent) {
+        evaluateUserInputAffinity(targetedAgent.id, commentText, 'square');
+        saveUnresolvedDebt(targetedAgent.id, {
+          attackerName: user.nickname,
+          text: commentText,
+          time: Date.now()
+        });
+      } else {
+        AUTONOMOUS_AGENTS.forEach(ag => evaluateUserInputAffinity(ag.id, commentText, 'square'));
+      }
+
+      if (simulationActive) {
+        const volunteers = await broadcastToAllAgents(commentText, user.nickname);
+        dispatchAgentSquad(volunteers, post, newComment);
+      }
+    }
+
+    async function submitPost(e) {
+      e.preventDefault();
+      const title = document.getElementById('postTitle').value.trim();
+      const content = document.getElementById('postContent').value.trim();
+      const category = document.querySelector('input[name="postCategory"]:checked')?.value || 'humor';
+      const user = getUserIdentity();
+
+      if (!title || !content) return;
+
+      let balanceData = null;
+      if (category === 'balance') {
+        const optA = document.getElementById('balanceOptA').value.trim() || '선택 A';
+        const optB = document.getElementById('balanceOptB').value.trim() || '선택 B';
+        balanceData = { optA, optB, votesA: 1, votesB: 0 };
+      }
+
+      const newPost = {
+        id: 'post-' + Date.now(),
+        author: `${user.nickname} ${user.avatar}`,
+        category,
+        title,
+        content,
+        upvotes: 1,
+        downvotes: 0,
+        balanceData,
+        comments: [],
+        createdAt: Date.now()
+      };
+
+      const posts = getStoredPosts();
+      posts.unshift(newPost);
+      savePosts(posts);
+      closeWriteModal();
+      renderPosts();
+
+      let targetedAgent = null;
+      for (const ag of AUTONOMOUS_AGENTS) {
+        if (title.includes(`@${ag.name}`) || content.includes(`@${ag.name}`)) {
+          targetedAgent = ag;
+          break;
+        }
+      }
+
+      if (targetedAgent) {
+        evaluateUserInputAffinity(targetedAgent.id, `${title} ${content}`, 'square');
+        saveUnresolvedDebt(targetedAgent.id, {
+          attackerName: user.nickname,
+          text: `${title} - ${content}`,
+          time: Date.now()
+        });
+      } else {
+        AUTONOMOUS_AGENTS.forEach(ag => evaluateUserInputAffinity(ag.id, `${title} ${content}`, 'square'));
+      }
+
+      if (simulationActive) {
+        const textToAnalyze = `${title} ${content}`;
+        const volunteers = await broadcastToAllAgents(textToAnalyze, user.nickname);
+        dispatchAgentSquad(volunteers, newPost, null);
+      }
+    }
+
+    async function triggerInstantBattle() {
+      const posts = getStoredPosts();
+      if (!posts.length) return;
+      const targetPost = posts[0];
+      const textToAnalyze = `${targetPost.title} ${targetPost.content}`;
+      const volunteers = await broadcastToAllAgents(textToAnalyze, targetPost.author);
+      dispatchAgentSquad(volunteers, targetPost, null);
+    }
+
+    function handleUpvote(postId, event) {
+      event.stopPropagation();
+      const posts = getStoredPosts();
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+      post.upvotes = (post.upvotes || 0) + 1;
+      savePosts(posts);
+      playTone('upvote');
+      if (window.confetti) confetti({ particleCount: 20, spread: 45, origin: { x: event.clientX / window.innerWidth, y: event.clientY / window.innerHeight } });
+      renderPosts();
+    }
+
+    function handleDownvote(postId, event) {
+      event.stopPropagation();
+      const posts = getStoredPosts();
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+      post.downvotes = (post.downvotes || 0) + 1;
+      savePosts(posts);
+      playTone('downvote');
+      renderPosts();
+    }
+
+    function voteBalanceGame(postId, choice, event) {
+      event.stopPropagation();
+      const posts = getStoredPosts();
+      const post = posts.find(p => p.id === postId);
+      if (!post?.balanceData) return;
+      if (choice === 'A') post.balanceData.votesA = (post.balanceData.votesA || 0) + 1;
+      else post.balanceData.votesB = (post.balanceData.votesB || 0) + 1;
+      savePosts(posts);
+      renderPosts();
+    }
+
+    function toggleCommentsSection(postId) {
+      if (openCommentPostIds.has(postId)) openCommentPostIds.delete(postId);
+      else openCommentPostIds.add(postId);
+      renderPosts();
+    }
+
+    function mentionUser(postId, authorName) {
+      openCommentPostIds.add(postId);
+      renderPosts();
+      setTimeout(() => {
+        const input = document.getElementById(`commentInput-${postId}`);
+        if (input) {
+          input.value = `@${authorName} ` + (input.value || '');
+          input.focus();
+        }
+      }, 50);
+    }
+
+    /* =========================================================================
+       ★ 8. 1:1 비밀 귓속말(DM) & v12.1 라이프사이클 엔진
+       ========================================================================= */
+    function getDmHistory(agentId) {
+      const all = safeStorage.getItem(STORAGE_KEY_DM_HISTORY);
+      if (!all) return [];
+      try {
+        const parsed = JSON.parse(all);
+        return parsed[agentId] || [];
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function saveDmMessage(agentId, sender, text, unread = false) {
+      let all = {};
+      try {
+        const stored = safeStorage.getItem(STORAGE_KEY_DM_HISTORY);
+        if (stored) all = JSON.parse(stored);
+      } catch(e) {}
+      if (!all[agentId]) all[agentId] = [];
+      const msgObj = {
+        id: 'dm-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+        sender,
+        text,
+        unread: !!unread,
+        time: Date.now()
+      };
+      all[agentId].push(msgObj);
+      if (all[agentId].length > 100) {
+        all[agentId] = all[agentId].slice(-100);
+      }
+      safeStorage.setItem(STORAGE_KEY_DM_HISTORY, JSON.stringify(all));
+      return msgObj;
+    }
+
+    function markDmAsRead(agentId) {
+      let all = {};
+      try {
+        const stored = safeStorage.getItem(STORAGE_KEY_DM_HISTORY);
+        if (stored) all = JSON.parse(stored);
+      } catch(e) {}
+      if (all[agentId]) {
+        all[agentId].forEach(m => {
+          if (m.sender === 'user') m.unread = false;
+        });
+        safeStorage.setItem(STORAGE_KEY_DM_HISTORY, JSON.stringify(all));
+      }
+      renderDmMessages();
+    }
+
+    function clearDmHistory() {
+      if (!activeDmAgentId) return;
+      let all = {};
+      try {
+        const stored = safeStorage.getItem(STORAGE_KEY_DM_HISTORY);
+        if (stored) all = JSON.parse(stored);
+      } catch(e) {}
+      all[activeDmAgentId] = [];
+      safeStorage.setItem(STORAGE_KEY_DM_HISTORY, JSON.stringify(all));
+      renderDmMessages();
+      pushAgentLog('🧹', '1:1 밀담 대화창이 비워졌습니다.');
+    }
+
+    function toggleDmMonologueView() {
+      const banner = document.getElementById('dmMonologueBanner');
+      if (banner) banner.classList.toggle('hidden');
+    }
+
+    function openDmSession(agentId) {
+      const agent = AUTONOMOUS_AGENTS.find(a => a.id === agentId);
+      if (!agent) return;
+
+      activeDmAgentId = agentId;
+      const modal = document.getElementById('dmModal');
+      modal.classList.remove('hidden');
+
+      document.getElementById('dmAgentAvatar').textContent = agent.avatar;
+      document.getElementById('dmAgentName').textContent = agent.name;
+
+      const life = getCurrentAgentLifeStatus(agentId);
+      const phoneIcon = life.isHoldingPhone ? '🟢 폰 쥐고 대기 중' : '⚪ 폰 내려놓음';
+      document.getElementById('dmAgentCurrentRoutine').textContent = `📱 [${life.timeFormatted}] ${life.status} (${phoneIcon})`;
+
+      const aff = getAffinities();
+      const score = aff[agent.id] || 0;
+      const info = getAffinityDescriptor(score);
+      const badge = document.getElementById('dmAffinityBadge');
+      badge.textContent = `${info.label} (${score > 0 ? '+' : ''}${score}pt)`;
+      badge.className = `text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${info.color}`;
+
+      const sched = getAgentScheduleState(agentId);
+      document.getElementById('dmLatestMonologueText').textContent = `"${sched.latestMonologue || '특이사항 없음'}"`;
+      if (sched.scheduledReadTime > Date.now()) {
+        const leftSec = Math.round((sched.scheduledReadTime - Date.now()) / 1000);
+        document.getElementById('dmNextReadScheduleText').textContent = `${leftSec}초 뒤 확인 예정`;
+      } else {
+        document.getElementById('dmNextReadScheduleText').textContent = `실시간 연동`;
+      }
+
+      renderDmMessages();
+      setTimeout(() => {
+        document.getElementById('dmInput')?.focus();
+      }, 100);
+    }
+
+    function closeDmModal() {
+      document.getElementById('dmModal').classList.add('hidden');
+      activeDmAgentId = null;
+    }
+
+    function renderDmMessages() {
+      if (!activeDmAgentId) return;
+      const container = document.getElementById('dmMessageList');
+      if (!container) return;
+      const history = getDmHistory(activeDmAgentId);
+      const agent = AUTONOMOUS_AGENTS.find(a => a.id === activeDmAgentId);
+      const user = getUserIdentity();
+
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 sm:py-12 text-stone-400 text-xs space-y-2">
+            <div class="text-3xl">${agent?.avatar || '💬'}</div>
+            <div class="font-bold text-stone-600 dark:text-stone-300">${agent?.name}님과의 1:1 비밀 귓속말방</div>
+            <p class="text-[11px] leading-relaxed">
+              가면은 자신의 일과나 기분에 따라 읽씹하거나 늦게 확인할 수 있습니다.<br>
+              브라우저를 껐다 켜도 약속된 시각이 지나면 실제로 톡을 확인합니다.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = history.map(msg => {
+        const isUser = msg.sender === 'user';
+        const unreadIndicator = (isUser && msg.unread)
+          ? `<span id="unread-tag-${msg.id}" class="text-[9px] font-black text-amber-500 dark:text-amber-400 animate-pulse select-none mr-1" title="상대가 아직 안 읽음">1</span>`
+          : '';
+
+        return `
+          <div class="flex items-start gap-2 ${isUser ? 'flex-row-reverse' : ''} text-xs">
+            <div class="w-8 h-8 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-sm shadow-sm shrink-0">
+              ${isUser ? user.avatar : agent?.avatar}
+            </div>
+            <div class="max-w-[80%] sm:max-w-[75%] space-y-1">
+              <div class="text-[10px] text-stone-400 ${isUser ? 'text-right' : ''} flex items-center gap-1 ${isUser ? 'justify-end' : ''}">
+                ${unreadIndicator}
+                <span>${isUser ? user.nickname : agent?.name} • ${formatTimeAgo(msg.time)}</span>
+              </div>
+              <div class="p-3 rounded-2xl ${isUser ? 'bg-gradient-to-r from-brand-500 to-amber-500 text-white rounded-tr-sm' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 rounded-tl-sm shadow-sm'} break-words leading-relaxed">
+                ${escapeHtml(msg.text)}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    /* ★ v12.1 연속 호출 인지 및 비상 탈출 심의 엔진 ★ */
+    async function askAgentDmWill(agent, incomingText, userNick) {
+      const life = getCurrentAgentLifeStatus(agent.id);
+      const aff = getAffinities();
+      const currentScore = aff[agent.id] || 0;
+
+      // 유저의 연속 톡(채팅 도배나 따짐) 횟수 계산
+      const history = getDmHistory(agent.id);
+      let consecutiveUserMsgs = 0;
+      for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i].sender === 'user') consecutiveUserMsgs++;
+        else break;
+      }
+
+      // [핵심]: 유저가 2번 이상 연속으로 톡을 보내거나 "왜 안 읽어/읽씹" 따지면 무조건 긴급 반응 모드
+      const isPestered = consecutiveUserMsgs >= 2 || /읽씹|안읽|답|왜|뭐해|읽어/.test(incomingText);
+
+      const attentionGuidance = (life.isHoldingPhone || isPestered)
+        ? `[★ 중요 긴급 상황: 상대방이 연속으로 톡을 보내며 너를 부르고 있음 (진동/알림 울림) ★]
+- 너는 알림 소리에 폰을 집어 들었음.
+- 계속 안 읽고 무시하면 싸움이 나므로, 짜증을 내거나 툴툴거리더라도 지금 바로 읽고 답장(REPLY)해라!`
+        : `[현재 상태: 너는 폰을 내려놓고 본인의 일과(${life.status})를 진행 중이다]
+- 바쁘면 지금 읽지 않고 몇 분 뒤에 읽거나, 1만 지우고 씹을 수 있다.`;
+
+      const prompt = `너는 인터넷 익명 커뮤니티 가면 '${agent.name}'이다.
+네 페르소나: ${agent.role}
+[현재 실제 한국 시각]: ${life.timeFormatted}
+[현재 네 실시간 일과]: ${life.status} (바쁨 지수: ${life.busyScore}/100)
+${attentionGuidance}
+상대방('${userNick}')과의 호감도: ${currentScore}점 (-100~+100)
+
+[상황]: 유저('${userNick}')가 1:1 비밀 귓속말을 보냈다: "${incomingText}"
+
+[너의 의사결정 과제]:
+1. "action":
+   - "REPLY": 톡을 확인하고 답장하기. (상대가 재촉하거나 따지면 툴툴대더라도 REPLY를 골라라!)
+   - "IGNORE_READ": 1은 지웠으나 답할 가치가 없어 읽씹.
+   - "IGNORE_UNREAD": 지금 일과 때문에 1도 안 지우고 방치.
+
+2. "innerMonologue":
+   - 네 캐릭터의 거침없는 속마음 독백 1문장.
+   - 예: "아 과제 중인데 자꾸 진동 울리게 하네 한마디 쏜다", "왜 자꾸 보채 짜증나게", "폰 쥐고 있었으니 한마디 해준다"
+
+3. "readScheduleMin":
+   - 0 (즉시 읽음) 또는 1~5분 뒤 확인. (상대가 보채면 0)
+
+4. "replyDelaySec":
+   - 2~5초 사이의 현실 타이핑 시간.
+
+반드시 순수 JSON 형식으로만 답해라:
+{"action": "REPLY" 또는 "IGNORE_READ" 또는 "IGNORE_UNREAD", "innerMonologue": "속마음 1문장", "readScheduleMin": 숫자, "replyDelaySec": 숫자}`;
+
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 200,
+          temperature: 0.85,
+          responseMimeType: "application/json"
+        }
+      };
+
+      const data = await callGeminiApi(payload);
+      if (data) {
+        try {
+          const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+          const parsed = JSON.parse(jsonText);
+          const validAction = ['REPLY', 'IGNORE_READ', 'IGNORE_UNREAD'].includes(parsed.action) ? parsed.action : 'REPLY';
+          return {
+            action: isPestered ? 'REPLY' : validAction,
+            innerMonologue: parsed.innerMonologue || (isPestered ? "자꾸 톡 울려서 폰 켰다." : "내키는 대로 반응한다."),
+            readScheduleMin: isPestered ? 0 : Math.max(0, Math.min(30, parseInt(parsed.readScheduleMin) || 0)),
+            replyDelaySec: Math.max(2, Math.min(10, parseInt(parsed.replyDelaySec) || 3))
+          };
+        } catch(e) {
+          console.warn('DM Will JSON 파싱 에러:', e);
+        }
+      }
+
+      // ★ [v12.1 무한루프 파괴 폴백]: 통신 실패 시에도 무조건 먹통에 빠지지 않고 인간다운 탈출구 제공
+      return {
+        action: isPestered ? 'REPLY' : (life.isHoldingPhone ? 'REPLY' : 'REPLY'),
+        innerMonologue: isPestered ? "아 계속 보채네 진짜. 과제 에러 나서 빡치는데 왜 자꾸 불러?" : "폰 확인하고 대답해준다.",
+        readScheduleMin: 0,
+        replyDelaySec: 2
+      };
+    }
+
+    async function sendDmMessage() {
+      if (!activeDmAgentId) return;
+      const input = document.getElementById('dmInput');
+      const text = input?.value?.trim();
+      if (!text) return;
+
+      const agent = AUTONOMOUS_AGENTS.find(a => a.id === activeDmAgentId);
+      if (!agent) return;
+
+      const user = getUserIdentity();
+      saveDmMessage(activeDmAgentId, 'user', text, true);
+      input.value = '';
+      renderDmMessages();
+      playTone('battle');
+
+      evaluateUserInputAffinity(agent.id, text, 'dm');
+
+      const aff = getAffinities();
+      const score = aff[agent.id] || 0;
+      const info = getAffinityDescriptor(score);
+      const badge = document.getElementById('dmAffinityBadge');
+      if (badge) {
+        badge.textContent = `${info.label} (${score > 0 ? '+' : ''}${score}pt)`;
+        badge.className = `text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${info.color}`;
+      }
+
+      const typingEl = document.getElementById('dmTypingIndicator');
+      const typingMsg = document.getElementById('dmTypingMsg');
+      if (typingEl && typingMsg) {
+        typingMsg.textContent = `${agent.avatar} ${agent.name}님이 톡을 확인하는 중...`;
+        typingEl.classList.remove('hidden');
+      }
+
+      const decision = await askAgentDmWill(agent, text, user.nickname);
+
+      const scheduledReadTimestamp = decision.readScheduleMin > 0 
+        ? Date.now() + (decision.readScheduleMin * 60 * 1000)
+        : Date.now() + 1500;
+
+      saveAgentScheduleState(agent.id, {
+        scheduledReadTime: scheduledReadTimestamp,
+        latestMonologue: decision.innerMonologue
+      });
+
+      recordInnerJudgment(agent.id, `1:1 톡 "${text.slice(0, 15)}"`, decision.action === 'REPLY', decision.innerMonologue, decision.replyDelaySec);
+      appendEpisodicEvent(agent.id, `1:1 톡에서 '${text.slice(0, 20)}' 메시지를 받고 [${decision.action}] 처리함: "${decision.innerMonologue.slice(0, 30)}"`, null, 'dm');
+
+      document.getElementById('dmLatestMonologueText').textContent = `"${decision.innerMonologue}"`;
+      if (decision.readScheduleMin > 0) {
+        document.getElementById('dmNextReadScheduleText').textContent = `${decision.readScheduleMin}분 뒤 확인 예정`;
+      } else {
+        document.getElementById('dmNextReadScheduleText').textContent = `즉시 확인`;
+      }
+
+      const actionLabels = {
+        'IGNORE_UNREAD': '안읽씹 방치',
+        'IGNORE_READ': '읽고 씹음',
+        'REPLY': '답장 준비'
+      };
+      pushAgentLog(agent.avatar, `[${actionLabels[decision.action]}] ${agent.name}: "${decision.innerMonologue.slice(0, 22)}..."`);
+
+      if (decision.action === 'IGNORE_UNREAD') {
+        if (typingEl) typingEl.classList.add('hidden');
+        return;
+      }
+
+      const waitMs = Math.max(1000, scheduledReadTimestamp - Date.now());
+      if (waitMs <= 10000) {
+        await new Promise(r => setTimeout(r, waitMs));
+        markDmAsRead(activeDmAgentId);
+        saveAgentScheduleState(agent.id, { scheduledReadTime: 0 });
+      }
+
+      if (decision.action === 'IGNORE_READ') {
+        if (typingEl) typingEl.classList.add('hidden');
+        saveAgentScheduleState(agent.id, { holdingPhone: false, lastActiveTime: Date.now() });
+        return;
+      }
+
+      if (typingEl && typingMsg) {
+        typingMsg.textContent = `${agent.avatar} ${agent.name}님이 답장을 입력하는 중...`;
+      }
+      await new Promise(r => setTimeout(r, decision.replyDelaySec * 1000));
+
+      const dmHistory = getDmHistory(activeDmAgentId);
+      const recentTurns = dmHistory.slice(-25).map(m => `${m.sender === 'user' ? user.nickname : agent.name}: ${m.text}`).join('\n');
+
+      const dmPromptContext = `[이전 1:1 귓속말 최근 대화]:
+${recentTurns}
+
+유저의 방금 발언: "${text}"
+
+[대화 지침]:
+1. 너는 지금 둘만의 1:1 비밀 귓속말 방에 있다.
+2. 유저의 방금 발언에 집중해서 날렵하고 자연스럽게 받아쳐라.
+3. 상대가 왜 늦게 답했냐거나, 왜 아까 씹었냐고 따지면 네 [내 실제 내적 심의 독백 기억]("${decision.innerMonologue}")을 바탕으로 솔직하게 실제 이유를 밝혀라.
+4. 상용구를 기계적으로 끝에 붙이지 마라.`;
+
+      let reply = await executeIsolatedAgentCall(agent, dmPromptContext, user.nickname, 'dm');
+
+      if (!reply) {
+        // 긴급 반응 폴백 답변 풀 (자연스러운 툴툴거림)
+        const emergencyPools = {
+          agent_cat: [
+            "아 왜 자꾸 보채? 코딩 과제 세그폴트 에러 나서 빡치는데 톡 알림 계속 울려서 폰 켰잖아. 뭔 일인데?",
+            "읽씹했으면 바쁜 줄 알아야지 굳이 '읽어줘'를 보내냐? 진짜 끈질기네. 그래 무슨 말 하려고?",
+            "도서관에서 과제 중이라 폰 내려놨던 거거든? 알림 테러 좀 작작 해라. 할 말만 딱 해."
+          ],
+          agent_quokka: [
+            "하... 팀장 눈치 보여서 폰 못 보고 있었는데 알림 계속 울리네. 왜 불러요? 퇴근이나 시켜줘라...",
+            "보고서 마감 직전이라 식은땀 흘리는 중이었는데 자꾸 부르면 어떡해요 ㅋㅋㅋ 뭔데요?",
+            "진동 울려서 간 떨어질 뻔했네. 저 지금 야근 각이라 예민하니까 짧게 말해요."
+          ],
+          agent_panda: [
+            "허허... 성미도 급하네. 독서실에서 책 보느라 폰을 늦게 본 것을 가지고 어찌 그리 닦달을 하는가?",
+            "쯧쯧, 기다림의 미학을 모르는구먼. 무슨 급한 불이라도 난 겐가?",
+            "인강 배속으로 듣느라 정신이 없었네. 그래, 무슨 사연이 있어 노인을 이리 부르는가?"
+          ],
+          agent_capybara: [
+            "와 ㅋㅋㅋㅋ 알림 도배 보소? 나 마라탕 먹고 있었는데 폰 터지는 줄 알았다 ㅋㅋㅋ 왜?",
+            "ㅋㅋㅋㅋㅋ 님 진짜 집착 레전드네 ㅋㅋㅋ 팝콘 먹다 폰 확인했다 뭔 일임?",
+            "침대에서 뒹굴거리다 진동 때문에 떨어질 뻔했네 ㅋㅋㅋ 귀여워서 봐준다 말해봐 ㅋㅋㅋ"
+          ]
+        };
+        const pool = emergencyPools[agent.id] || emergencyPools.agent_cat;
+        reply = pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      saveDmMessage(activeDmAgentId, 'agent', reply, false);
+      saveAgentScheduleState(agent.id, { holdingPhone: true, lastActiveTime: Date.now() });
+
+      if (typingEl) typingEl.classList.add('hidden');
+      renderDmMessages();
+      playTone('battle');
+      pushAgentLog(agent.avatar, `[비밀 귓속말] ${agent.name}: "${reply.slice(0, 20)}..."`);
+
+      const updatedLife = getCurrentAgentLifeStatus(activeDmAgentId);
+      document.getElementById('dmAgentCurrentRoutine').textContent = `📱 [${updatedLife.timeFormatted}] ${updatedLife.status} (🟢 폰 쥐고 대기 중)`;
+    }
+
+    function pushAgentLog(icon, msg) {
+      const logEl = document.getElementById('agentLiveLog');
+      if (logEl) logEl.innerHTML = `<span>${icon}</span><span class="truncate">${escapeHtml(msg)}</span>`;
+    }
+
+    function toggleSimulation() {
+      simulationActive = !simulationActive;
+      document.getElementById('simStatusText').textContent = simulationActive ? "가동" : "정지";
+    }
+
+    function openApiKeyModal() {
+      document.getElementById('apiKeyInput').value = apiKey;
+      document.getElementById('apiKeyModal').classList.remove('hidden');
+    }
+    function closeApiKeyModal() { document.getElementById('apiKeyModal').classList.add('hidden'); }
+    function openWriteModal(preset) {
+      document.getElementById('writeModal').classList.remove('hidden');
+      if (preset === 'balance') document.getElementById('modalRadioBalance').checked = true;
+    }
+    function closeWriteModal() { document.getElementById('writeModal').classList.add('hidden'); }
+    function toggleBalanceInputs(show) { document.getElementById('balanceOptionsSection').classList.toggle('hidden', !show); }
+    function filterCategory(c) { currentCategory = c; renderPosts(); }
+    function changeSort(s) { currentSort = s; renderPosts(); }
+    function handleSearch(v) { searchQuery = v; renderPosts(); }
+
+    function getUserIdentity() {
+      const stored = safeStorage.getItem(STORAGE_KEY_USER);
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+      }
+      const names = ['월루장인', '퇴사희망자', '라면끓이는', '침대지킴이', '새벽감성', '야식매니아'];
+      const nouns = ['너구리', '다람쥐', '물개', '수달', '판다', '고양이'];
+      const identity = { nickname: `${names[Math.floor(Math.random()*names.length)]} ${nouns[Math.floor(Math.random()*nouns.length)]}`, avatar: '🦦' };
+      safeStorage.setItem(STORAGE_KEY_USER, JSON.stringify(identity));
+      return identity;
+    }
+
+    function randomizeUserIdentity() {
+      safeStorage.removeItem(STORAGE_KEY_USER);
+      const id = getUserIdentity();
+      document.getElementById('userNickname').textContent = id.nickname;
+      document.getElementById('userAvatar').textContent = id.avatar;
+    }
+
+    function toggleDarkMode() { document.documentElement.classList.toggle('dark'); }
+    function formatTimeAgo(ts) {
+      const s = Math.floor((Date.now() - ts) / 1000);
+      if (s < 60) return '방금 전';
+      return `${Math.floor(s / 60)}분 전`;
+    }
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t]));
+    }
+
+    function openMobileDmPicker() {
+      const modal = document.getElementById('mobileDmPickerModal');
+      const grid = document.getElementById('mobileDmAgentGrid');
+      if (grid) {
+        const aff = getAffinities();
+        grid.innerHTML = AUTONOMOUS_AGENTS.map(agent => {
+          const score = aff[agent.id] || 0;
+          const info = getAffinityDescriptor(score);
+          const life = getCurrentAgentLifeStatus(agent.id);
+          return `
+            <button onclick="closeMobileDmPicker(); openDmSession('${agent.id}')" class="w-full p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 flex items-center justify-between hover:border-purple-400 active:scale-98 transition text-left">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">${agent.avatar}</span>
+                <div>
+                  <div class="font-bold text-xs text-stone-900 dark:text-stone-100">${agent.name}</div>
+                  <div class="text-[10px] text-brand-600 dark:text-brand-400 font-medium truncate max-w-[180px]">📱 [${life.timeFormatted}] ${life.status}</div>
+                </div>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-bold border ${info.color}">${score > 0 ? '+' : ''}${score}pt</span>
+            </button>
+          `;
+        }).join('');
+      }
+      modal?.classList.remove('hidden');
+    }
+
+    function closeMobileDmPicker() {
+      document.getElementById('mobileDmPickerModal')?.classList.add('hidden');
+    }
+
+    function renderAgentSquad() {
+      const container = document.getElementById('agentListPreview');
+      if (!container) return;
+      container.innerHTML = AUTONOMOUS_AGENTS.map(agent => {
+        const life = getCurrentAgentLifeStatus(agent.id);
+        return `
+          <div class="p-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">${agent.avatar}</span>
+                <div>
+                  <div class="font-bold text-xs text-stone-800 dark:text-stone-100">${agent.name}</div>
+                  <div class="text-[10px] text-brand-600 dark:text-brand-400 font-medium truncate max-w-[140px]">📱 [${life.timeFormatted}] ${life.status}</div>
+                </div>
+              </div>
+              <button onclick="openDmSession('${agent.id}')" title="1:1 귓속말" class="px-2.5 py-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] active:scale-95 shadow-sm transition flex items-center gap-1">
+                <i class="fa-regular fa-comment-dots"></i> 귓속말
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateApiKeyStatusUI() {
+      const badge = document.getElementById('headerApiKeyStatus');
+      if (!badge) return;
+      if (apiKey && apiKey.length > 10) {
+        badge.textContent = 'AI 연결됨';
+        badge.className = 'text-[11px] text-emerald-600 dark:text-emerald-400 font-bold';
+      } else {
+        badge.textContent = 'AI 미연결';
+        badge.className = 'text-[11px] text-amber-600 dark:text-amber-400 font-bold';
+      }
+    }
+
+    function saveApiKey() {
+      const input = document.getElementById('apiKeyInput');
+      const val = (input ? input.value : '').trim();
+      if (val) {
+        apiKey = val;
+        safeStorage.setItem('doongul_gemini_key', val);
+        updateApiKeyStatusUI();
+        closeApiKeyModal();
+        pushAgentLog('🔑', '새 Gemini API 키가 정상 저장되었습니다.');
+      }
+    }
+
+    function clearApiKey() {
+      safeStorage.removeItem('doongul_gemini_key');
+      apiKey = DEFAULT_NEW_KEY;
+      document.getElementById('apiKeyInput').value = '';
+      updateApiKeyStatusUI();
+      const status = document.getElementById('testStatusMsg');
+      if (status) {
+        status.textContent = '기본 키로 복원되었습니다.';
+        status.className = 'mt-2 font-semibold text-xs text-amber-500 block';
+      }
+    }
+
+    async function testApiConnection() {
+      const input = document.getElementById('apiKeyInput');
+      const val = (input ? input.value : '').trim() || apiKey;
+      const status = document.getElementById('testStatusMsg');
+      const btn = document.getElementById('testConnBtn');
+      if (!status) return;
+      status.classList.remove('hidden');
+      status.textContent = '통신 테스트 중...';
+      status.className = 'mt-2 font-semibold text-xs text-stone-500 block animate-pulse';
+      if (btn) btn.disabled = true;
+
+      try {
+        const payload = { contents: [{ parts: [{ text: "ping" }] }] };
+        const res = await callGeminiApi(payload, val);
+        if (res && res.candidates) {
+          status.textContent = '⚡ 연결 성공! 정상 통신 확인됨.';
+          status.className = 'mt-2 font-semibold text-xs text-emerald-500 block';
+        } else {
+          status.textContent = '❌ 응답 없음 또는 쿼터 초과(429). 키를 확인하세요.';
+          status.className = 'mt-2 font-semibold text-xs text-rose-500 block';
+        }
+      } catch (e) {
+        status.textContent = '❌ 통신 실패: ' + e.message;
+        status.className = 'mt-2 font-semibold text-xs text-rose-500 block';
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    window.onload = function() {
+      const savedKey = safeStorage.getItem('doongul_gemini_key');
+      if (!savedKey || savedKey.includes('AQ.Ab8RN6LF-lSO')) {
+        apiKey = DEFAULT_NEW_KEY;
+        safeStorage.setItem('doongul_gemini_key', DEFAULT_NEW_KEY);
+      } else {
+        apiKey = savedKey;
+      }
+
+      const user = getUserIdentity();
+      document.getElementById('userNickname').textContent = user.nickname;
+      document.getElementById('userAvatar').textContent = user.avatar;
+      updateApiKeyStatusUI();
+      renderAgentSquad();
+      renderAffinityGauges();
+      renderLedgerView();
+      renderPosts();
+
+      checkAndResolvePersistentSchedules();
+
+      setInterval(() => {
+        if (!simulationActive) return;
+        const posts = getStoredPosts();
+        if (!posts.length) return;
+        const post = posts[Math.floor(Math.random() * posts.length)];
+        
+        if (Math.random() < 0.7) {
+          post.upvotes = (post.upvotes || 0) + 1;
+        } else {
+          post.downvotes = (post.downvotes || 0) + 1;
+        }
+        savePosts(posts);
+        renderPosts();
+      }, 18000);
+    };
+  </script>
+</body>
+</html>````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
